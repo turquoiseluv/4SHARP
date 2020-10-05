@@ -1,0 +1,41 @@
+{
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "eject": "expo eject"
+  },
+  "dependencies": {
+    "@react-native-community/masked-view": "^0.1.10",
+    "@react-navigation/native": "^5.7.3",
+    "@react-navigation/stack": "^5.9.0",
+    "expo": "^38.0.0",
+    "expo-camera": "~8.3.1",
+    "expo-constants": "~9.1.1",
+    "expo-image-picker": "~8.3.0",
+    "expo-media-library": "~8.2.1",
+    "expo-permissions": "~9.0.1",
+    "react": "16.11.0",
+    "react-dom": "16.11.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
+    "react-native-gesture-handler": "~1.6.0",
+    "react-native-get-pixel": "^0.0.5",
+    "react-native-image-pan-zoom": "^2.1.12",
+    "react-native-image-viewing": "^0.2.0",
+    "react-native-image-zoom-viewer": "^3.0.1",
+    "react-native-is-iphonex": "^1.0.1",
+    "react-native-reanimated": "~1.9.0",
+    "react-native-router-flux": "^4.2.0",
+    "react-native-safe-area-context": "~3.0.7",
+    "react-native-screens": "~2.9.0",
+    "react-native-web": "~0.11.7",
+    "react-navigation-animated-switch": "^0.6.0",
+    "react-navigation-hooks": "^1.1.0"
+  },
+  "devDependencies": {
+    "babel-preset-expo": "^8.2.3"
+  },
+  "private": true
+}
