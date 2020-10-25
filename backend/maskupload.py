@@ -16,5 +16,3 @@ def MaskUpload(name):
     with open(os.path.abspath(f"./workspace/{name}/{name}.txt"), 'rb') as localfile:
         ses.storbinary("STOR " + f"{name}.txt", localfile)
         localfile.close()
-
-MaskUpload("US")

@@ -7,7 +7,6 @@ from imgdownload import ImgDownload
 from maskupload import MaskUpload
 from detect import detectP
 
-
 ROOT_DIR = os.path.abspath("./")
 WAIT_DIR = os.path.abspath("./waiting")
 WORK_DIR = os.path.abspath("./workspace")
