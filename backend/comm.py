@@ -7,7 +7,6 @@ from imgdownload import ImgDownload
 from maskupload import MaskUpload
 from detect import detectP
 
-
 ROOT_DIR = os.path.abspath("./")
 WAIT_DIR = os.path.abspath("./waiting")
 WORK_DIR = os.path.abspath("./workspace")
@@ -21,7 +20,7 @@ def process(name):
     detectP(name)
     print("detectP end")
     while True:
-        if os.path.exists(os.path.join(WORK_DIR, name+".txt")) == False:
+        if os.path.exists(os.path.join(WORK_DIR, name+"/"+name+".txt")) == False:
             time.sleep(5)
             continue
         time.sleep(1)

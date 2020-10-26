@@ -4,21 +4,26 @@ import numpy as np
 import cv2 as cv
 import shutil
 import imutils
+import threading
+import time
 from PIL import Image
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+from imgdownload import ImgDownload
+from maskupload import MaskUpload
+from maskdownload import MaskDownload
 
 from mrcnn import visualize
 from mrcnn.config import Config
 from mrcnn import model as modellib
 
-BACK_DIR = os.path.abspath("./")
-ROOT_DIR = os.path.abspath("./workspace/")
+ROOT_DIR = os.path.abspath("./")
+WAIT_DIR = os.path.abspath("./waiting")
+WORK_DIR = os.path.abspath("./workspace")
 
 def png_convert(cnt, name):
-    MASK_DIR = os.path.join(ROOT_DIR, name + "//mask")
-    TMASK_DIR = os.path.join(ROOT_DIR, name + "//tmask")
-    for i in range(0, cnt):
+    MASK_DIR = os.path.join(WORK_DIR, name + "//mask")
+    for i in range(1, cnt):
         savefile = str(i)+".png"
         img = Image.open(os.path.join(MASK_DIR, savefile))
         img = img.convert("RGBA")
@@ -35,12 +40,15 @@ def png_convert(cnt, name):
         img.save(os.path.join(MASK_DIR, savefile), "PNG")
 
 def makeMask(r, image, name):
-    MASK_DIR = os.path.join(ROOT_DIR, name + "//mask")
-    TMASK_DIR = os.path.join(ROOT_DIR, name + "//tmask")
+    MASK_DIR = os.path.join(WORK_DIR, name + "//mask")
+    TMASK_DIR = os.path.join(WORK_DIR, name + "//tmask")
 
-    maskCnt = 0
+    cv.imwrite(os.path.join(MASK_DIR, "0.png"), np.zeros(shape=image.shape, dtype=np.uint8))
+    cv.imwrite(os.path.join(TMASK_DIR, "0.png"), np.zeros(shape=image.shape, dtype=np.uint8))
+
+    maskCnt = 1
     for i in range(0, r["rois"].shape[0]):
-        if r['scores'][i] >= 0.8 and r['class_ids'][i] == 1:
+        if r['scores'][i] >= 0.9 and r['class_ids'][i] == 1:
             savefile = str(maskCnt) + ".png"
             maskCnt += 1
             mask = r['masks'][:, :, i]
@@ -57,14 +65,14 @@ def makeMask(r, image, name):
                 cv.drawContours(black_image, [cnt], 0, (255, 255, 255), 13)
             cv.imwrite(os.path.join(TMASK_DIR, savefile), black_image)
     png_convert(maskCnt, name)
-    return maskCnt
+    return maskCnt-1
 
 def detectP(name):
     print(name)
-    MASK_DIR = os.path.join(ROOT_DIR, name+"//mask")
-    TMASK_DIR = os.path.join(ROOT_DIR, name+"//tmask")
+    MASK_DIR = os.path.join(WORK_DIR, name+"//mask")
+    TMASK_DIR = os.path.join(WORK_DIR, name+"//tmask")
 
-    COCO_MODEL_PATH = os.path.join(BACK_DIR, "mask_rcnn_coco.h5")
+    COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
     class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
                    'bus', 'train', 'truck', 'boat', 'traffic light',
                    'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird',
@@ -92,18 +100,19 @@ def detectP(name):
                               , model_dir=os.getcwd())
     model.load_weights(COCO_MODEL_PATH, by_name=True)
 
-    CUR_DIR = os.path.join(ROOT_DIR, name)
+    CUR_DIR = os.path.join(WORK_DIR, name)
+
     filename = os.listdir(CUR_DIR)
     image = cv.imread(os.path.join(CUR_DIR, filename[0]))
 
     if image.shape[0] >= image.shape[1]:
         image = imutils.resize(image, height=720)
-    else :
+    else:
         image = imutils.resize(image, width=720)
     cv.imwrite(os.path.join(CUR_DIR, name + ".png"), image)
 
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-    results= model.detect([image], verbose=1)
+    results = model.detect([image], verbose=1)
     r = results[0]
 
     os.mkdir(MASK_DIR)
@@ -115,4 +124,36 @@ def detectP(name):
     f.close()
 
     os.remove(os.path.join(CUR_DIR, filename[0]))
+
+def process(name):
+    print("detectP start")
+    detectP(name)
+    print("detectP end")
+    while True:
+        if os.path.exists(os.path.join(WORK_DIR, name+"/"+name+".txt")) == False:
+            time.sleep(3)
+            continue
+        time.sleep(1)
+        break
+    MaskUpload(name)
+    MaskDownload(name)
     return 0
+
+imgd = threading.Thread(target=ImgDownload)
+imgd.daemon = True
+imgd.start()
+
+
+while True:
+    waiting = os.listdir(WAIT_DIR)
+    if waiting == []:
+        time.sleep(5)
+        print("waiting is empty")
+        continue
+    time.sleep(1)
+    print(f"waiting is {waiting}")
+    for name in waiting:
+        shutil.copytree(os.path.join(WAIT_DIR, name), os.path.join(WORK_DIR, name))
+        shutil.rmtree(os.path.join(WAIT_DIR, name), ignore_errors=True)
+        time.sleep(1)
+        threading.Thread(target=process, args=(name,)).start()

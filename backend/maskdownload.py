@@ -1,10 +1,11 @@
-def MaskUpload(name):
+def MaskDownload(name):
     import ftplib, os
 
     CUR_DIR = os.path.abspath("./workspace/"+name+"/mask")
 
     ses = ftplib.FTP("winners.dothome.co.kr", "winners", "tkdals96!")
     ses.cwd("./html/"+name)
+
 
     listdir = os.listdir(CUR_DIR)
     print(listdir)
