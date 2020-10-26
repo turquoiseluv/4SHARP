@@ -93,7 +93,6 @@ def detectP(name):
     model.load_weights(COCO_MODEL_PATH, by_name=True)
 
     CUR_DIR = os.path.join(ROOT_DIR, name)
-
     filename = os.listdir(CUR_DIR)
     image = cv.imread(os.path.join(CUR_DIR, filename[0]))
 
@@ -101,7 +100,7 @@ def detectP(name):
         image = imutils.resize(image, height=720)
     else :
         image = imutils.resize(image, width=720)
-    cv.imwrite(os.path.join(CUR_DIR, f"{name}.png", image))
+    cv.imwrite(os.path.join(CUR_DIR, name + ".png"), image)
 
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     results= model.detect([image], verbose=1)
@@ -116,4 +115,4 @@ def detectP(name):
     f.close()
 
     os.remove(os.path.join(CUR_DIR, filename[0]))
-    exit()
+    return 0

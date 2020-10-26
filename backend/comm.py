@@ -20,7 +20,7 @@ def process(name):
     detectP(name)
     print("detectP end")
     while True:
-        if os.path.exists(os.path.join(WORK_DIR, name+".txt")) == False:
+        if os.path.exists(os.path.join(WORK_DIR, name+"/"+name+".txt")) == False:
             time.sleep(5)
             continue
         time.sleep(1)
