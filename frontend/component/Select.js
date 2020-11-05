@@ -12,6 +12,7 @@ import {
 import { Foundation, Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
 import ImageZoom from "react-native-image-pan-zoom";
 import Home from "./Home";
+import UserMask from "./UserMask";
 import { AntDesign } from "@expo/vector-icons";
 import isIPhoneX from "react-native-is-iphonex";
 
@@ -34,6 +35,7 @@ export default class Select extends React.Component {
     imageY: 0,
     goBack: false,
     imgLoaded: false,
+    userMode: false,
     masks: [
       {
         id: 0,
@@ -116,43 +118,49 @@ export default class Select extends React.Component {
       });
   };
 
-  imageUploading = () => {
-    const uri = this.state.uri;
-    console.log("hi");
-    const form = new FormData();
+  // imageUploading = () => {
+  //   const uri = this.state.uri;
+  //   console.log("hi");
+  //   const form = new FormData();
 
-    form.append("test", {
-      uri: uri,
-      type: "image/jpg",
-      name: "test.jpg",
+  //   form.append("test", {
+  //     uri: uri,
+  //     type: "image/jpg",
+  //     name: "test.jpg",
+  //   });
+
+  //   fetch("http://zpunsss.dothome.co.kr/php/test.php", {
+  //     method: "POST",
+  //     body: form,
+  //     headers: {
+  //       Accept: "application/json",
+  //       "Content-Type": "multipart/form-data",
+  //     },
+  //   })
+  //     .then((response) => {
+  //       console.log(JSON.stringify(response));
+  //       // 성공시 카메라로 or 알림 닫기
+  //       Alert.alert(
+  //         "Upload Successful",
+  //         "성공적으로 업로드 되었습니다.",
+  //         [
+  //           { text: "카메라", onPress: this.pressedBack },
+  //           { text: "닫기", onPress: () => console.log("닫기 누름") },
+  //         ],
+  //         { cancelable: false }
+  //       );
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //       Alert.alert("Upload Failed", "업로드가 실패했습니다.");
+  //       // 실패시 알림 확인만
+  //     });
+  // };
+
+  userMode = async () => {
+    this.setState({
+      userMode: true,
     });
-
-    fetch("http://zpunsss.dothome.co.kr/php/test.php", {
-      method: "POST",
-      body: form,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "multipart/form-data",
-      },
-    })
-      .then((response) => {
-        console.log(JSON.stringify(response));
-        // 성공시 카메라로 or 알림 닫기
-        Alert.alert(
-          "Upload Successful",
-          "성공적으로 업로드 되었습니다.",
-          [
-            { text: "카메라", onPress: this.pressedBack },
-            { text: "닫기", onPress: () => console.log("닫기 누름") },
-          ],
-          { cancelable: false }
-        );
-      })
-      .catch((error) => {
-        console.log(error);
-        Alert.alert("Upload Failed", "업로드가 실패했습니다.");
-        // 실패시 알림 확인만
-      });
   };
 
   // 좌우비율이 같을때, 상하비율로 그림인지 판단
@@ -242,9 +250,9 @@ export default class Select extends React.Component {
             <AntDesign name="closecircleo" size={30} color="white" />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.backbtn} onPress={this.imageUploading}>
+        <TouchableOpacity style={styles.backbtn} onPress={this.userMode}>
           <View>
-            <AntDesign name="upload" size={30} color="white" />
+            <MaterialCommunityIcons name="draw" size={30} color="white" />
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={styles.backbtn} onPress={this.confirmSelect}>
@@ -262,7 +270,6 @@ export default class Select extends React.Component {
     if (masks != []) {
       const list = masks.map((info) => (
         <Image
-          key={info.id}
           source={info.uri}
           style={{
             width: screen.width,
@@ -277,6 +284,11 @@ export default class Select extends React.Component {
     }
   };
 
+  renderUser = () => {
+    console.log("###");
+    return <UserMask />;
+  };
+
   render() {
     if (this.state.ratio === 0 && this.state.imgLoaded) {
       Image.getSize(this.state.uri, (width, height) => {
@@ -286,8 +298,13 @@ export default class Select extends React.Component {
         });
       });
     }
-    const content = this.state.goBack ? this.renderHome() : this.renderSelect();
-    return content;
+    if (this.state.goBack) {
+      return this.renderHome();
+    } else if (this.state.userMode) {
+      return this.renderUser();
+    } else {
+      return this.renderSelect();
+    }
   }
 }
 
