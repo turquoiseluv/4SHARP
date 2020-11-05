@@ -16,7 +16,7 @@ export default class Timer extends React.Component {
       this.setState({
         isLogo: false,
       });
-    }, 10000);
+    }, 100);
   }
 
   componentWillUnmount() {

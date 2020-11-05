@@ -35,67 +35,39 @@ export default class Select extends React.Component {
     imageY: 0,
     goBack: false,
     imgLoaded: false,
+    maskLoaded: false,
     userMode: false,
-    masks: [
-      {
-        id: 0,
-        uri: mask1,
-        selected: false,
-        xLow: 45,
-        xHigh: 170,
-        yLow: 130,
-        yHigh: 280,
-      },
-      {
-        id: 1,
-        uri: mask2,
-        selected: false,
-        xLow: 175,
-        xHigh: 260,
-        yLow: 135,
-        yHigh: 280,
-      },
-      {
-        id: 2,
-        uri: mask3,
-        selected: false,
-        xLow: 275,
-        xHigh: 345,
-        yLow: 140,
-        yHigh: 270,
-      },
-      {
-        id: 3,
-        uri: mask4,
-        selected: false,
-        xLow: 345,
-        xHigh: 415,
-        yLow: 50,
-        yHigh: 235,
-      },
-      {
-        id: 4,
-        uri: mask5,
-        selected: false,
-        xLow: 365,
-        xHigh: 510,
-        yLow: 235,
-        yHigh: 315,
-      },
-    ],
+    masks: [],
+    maskLen: 0,
   };
 
   componentDidMount() {
     this.imageDownloading();
+    this.maskDownloading();
   }
 
-  detectImageSelected = (x, y) => {
+  maskDownloading = async () => {
+    let session = this.state.sessionid;
+    let masklength = 5;
+    for (let id = 0; id < masklength; id++) {
+      let masknumber = 1 + id;
+      const { masks } = this.state;
+      await this.setState({
+        masks: masks.concat({
+          id: id,
+          uri: `http://zpunsss.dothome.co.kr/php/download/id_num/${masknumber}.png`,
+          selected: false,
+        }),
+      });
+    }
+    this.setState({ maskLoaded: true });
+  };
+
+  detectImageSelected = (num) => {
     const { masks } = this.state;
     this.setState({
       masks: masks.map((mask) =>
-        mask.xLow < x && x < mask.xHigh && mask.yLow < y && y < mask.yHigh
-          ? { ...mask, selected: !mask.selected }
-          : mask
+        mask.id == num ? { ...mask, selected: !mask.selected } : mask
       ),
     });
   };
@@ -118,45 +90,6 @@ export default class Select extends React.Component {
       });
   };
 
-  // imageUploading = () => {
-  //   const uri = this.state.uri;
-  //   console.log("hi");
-  //   const form = new FormData();
-
-  //   form.append("test", {
-  //     uri: uri,
-  //     type: "image/jpg",
-  //     name: "test.jpg",
-  //   });
-
-  //   fetch("http://zpunsss.dothome.co.kr/php/test.php", {
-  //     method: "POST",
-  //     body: form,
-  //     headers: {
-  //       Accept: "application/json",
-  //       "Content-Type": "multipart/form-data",
-  //     },
-  //   })
-  //     .then((response) => {
-  //       console.log(JSON.stringify(response));
-  //       // 성공시 카메라로 or 알림 닫기
-  //       Alert.alert(
-  //         "Upload Successful",
-  //         "성공적으로 업로드 되었습니다.",
-  //         [
-  //           { text: "카메라", onPress: this.pressedBack },
-  //           { text: "닫기", onPress: () => console.log("닫기 누름") },
-  //         ],
-  //         { cancelable: false }
-  //       );
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //       Alert.alert("Upload Failed", "업로드가 실패했습니다.");
-  //       // 실패시 알림 확인만
-  //     });
-  // };
-
   userMode = async () => {
     this.setState({
       userMode: true,
@@ -173,7 +106,19 @@ export default class Select extends React.Component {
         axisY: px.locationY,
         imageY: px.locationY * scale,
       });
-      this.detectImageSelected(this.state.imageX, this.state.imageY);
+      let x = Math.round(this.state.imageX);
+      let y = Math.round(this.state.imageY);
+      console.log(x, y);
+      fetch(
+        `http://zpunsss.dothome.co.kr/checking_mask_number.php?maskLen=${maskLen}&x=${x}&y=${y}`
+      )
+        .then((response) => response.text())
+        .then((responseText) => {
+          if (responseText) {
+            this.detectImageSelected(responseText);
+          }
+        })
+        .catch((error) => alert(error));
     }
   };
 
@@ -267,25 +212,22 @@ export default class Select extends React.Component {
   renderMask = () => {
     const { masks } = this.state;
     //masks가 불려오기 전에 호출하지 않게...
-    if (masks != []) {
-      const list = masks.map((info) => (
-        <Image
-          source={info.uri}
-          style={{
-            width: screen.width,
-            height: screen.width * this.state.ratio,
-            position: "absolute",
-            tintColor: masks[info.id].selected ? "#e4488877" : "#28aaaa77",
-          }}
-          resizeMode={"contain"}
-        ></Image>
-      ));
-      return list;
-    }
+    const list = masks.map((info) => (
+      <Image
+        source={{ uri: info.uri }}
+        style={{
+          width: screen.width,
+          height: screen.width * this.state.ratio,
+          position: "absolute",
+          tintColor: masks[info.id].selected ? "#e4488877" : "#28aaaa77",
+        }}
+        resizeMode={"contain"}
+      />
+    ));
+    return list;
   };
 
   renderUser = () => {
-    console.log("###");
     return <UserMask />;
   };
 
@@ -302,8 +244,10 @@ export default class Select extends React.Component {
       return this.renderHome();
     } else if (this.state.userMode) {
       return this.renderUser();
-    } else {
+    } else if (this.state.maskLoaded) {
       return this.renderSelect();
+    } else {
+      return null;
     }
   }
 }
