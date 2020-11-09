@@ -1,6 +1,7 @@
 import React, { Component, useState, useEffect } from "react";
 import Slider from "@react-native-community/slider";
 import {
+  Alert,
   Text,
   View,
   StyleSheet,
@@ -10,11 +11,7 @@ import {
 } from "react-native";
 import Constants from "expo-constants";
 import ExpoPixi from "expo-pixi";
-import {
-  MaterialIcons,
-  Fontisto,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { MaterialIcons, Fontisto } from "@expo/vector-icons";
 import Select from "./Select";
 
 import * as ImagePicker from "expo-image-picker";
@@ -40,7 +37,7 @@ export default class UserMode extends Component {
     cameraGranted: false,
     uploading: false,
 
-    image: "",
+    image: this.props.uri,
     mask: null,
     color: 0xe44888,
     alpha: 1,
@@ -63,6 +60,7 @@ export default class UserMode extends Component {
 
   componentDidMount() {
     this.getPermissionRollAsync();
+    this.getImageSize();
   }
 
   getPermissionRollAsync = async () => {
@@ -71,7 +69,7 @@ export default class UserMode extends Component {
   };
 
   onReady = () => {
-    console.log("sketch ready!");
+    // console.log("sketch ready!");
   };
 
   onChangeAsync = async () => {
@@ -83,28 +81,29 @@ export default class UserMode extends Component {
   };
 
   uploadImageAsync = async (uri) => {
-    let apiUrl = "http://127.0.0.1:8000/api/item/";
+    // let uriParts = uri.split(".");
+    // let fileType = uriParts[uriParts.length - 1];
 
-    let uriParts = uri.split(".");
-    let fileType = uriParts[uriParts.length - 1];
-
-    let formData = new FormData();
-    formData.append("image", {
-      uri,
-      name: `image.${fileType}`,
-      type: `image/${fileType}`,
+    const form = new FormData();
+    form.append("mask", {
+      uri: uri,
+      name: "0", //파일이름 변경할 시 변경
     });
-
-    let options = {
+    await fetch("http://zpunsss.dothome.co.kr/image_upload_user.php", {
       method: "POST",
-      body: formData,
+      body: form,
       headers: {
         Accept: "application/json",
         "Content-Type": "multipart/form-data",
       },
-    };
-
-    return fetch(apiUrl, options);
+    })
+      .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
+      .then((responseJson) => {
+        console.log(responseJson);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   saveMask = async () => {
@@ -130,19 +129,11 @@ export default class UserMode extends Component {
         ],
         {}
       );
-      console.log(manipResult);
+      // console.log(manipResult);
 
-      uploadResponse = await this.uploadImageAsync(manipResult.uri);
-      uploadResult = await uploadResponse.json();
-
-      this.setState({
-        item: {
-          ...this.state.item,
-          image: uploadResult.location,
-        },
-      });
+      await this.uploadImageAsync(manipResult.uri);
     } catch (e) {
-      console.log({ e });
+      // console.log({ e });
     } finally {
       this.setState({
         uploading: false,
@@ -166,23 +157,14 @@ export default class UserMode extends Component {
     }
   };
 
-  uploadButton = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-    });
-
-    if (!result.cancelled) {
-      // 이미지 선택을 취소하지 않으면
-      this.clearMask();
-      await this.setState({ imgLoaded: true, image: result.uri });
-      Image.getSize(this.state.image, (width, height) => {
-        this.setState({
-          scale: height / width,
-          sketchHeight: Math.round((height * windowWidth) / width),
-        });
+  getImageSize = async () => {
+    Image.getSize(this.state.image, (width, height) => {
+      this.setState({
+        imgLoaded: true,
+        scale: height / width,
+        sketchHeight: Math.round(windowWidth * (height / width)),
       });
-    }
+    });
   };
 
   clearMask = async () => {
@@ -203,120 +185,92 @@ export default class UserMode extends Component {
   };
 
   renderSketch = () => {
-    if (this.state.imgLoaded == true) {
-      return (
-        <View
+    return (
+      <View
+        style={{
+          flex: 1,
+          position: "absolute",
+          height: windowHeight,
+          width: windowWidth,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ExpoPixi.Sketch
+          resizeMode="contain"
+          ref={(ref) => (this.sketch = ref)}
+          strokeColor={this.state.color}
+          strokeWidth={this.state.width}
+          strokeAlpha={this.state.alpha}
           style={{
             flex: 1,
             position: "absolute",
             height: windowHeight,
             width: windowWidth,
-            justifyContent: "center",
-            alignItems: "center",
           }}
-        >
-          <ExpoPixi.Sketch
+          onChange={this.onChangeAsync}
+          onReady={this.onReady}
+        />
+      </View>
+    );
+  };
+
+  renderUser() {
+    if (this.state.imgLoaded == true) {
+      return (
+        <View style={styles.container}>
+          <Image
             resizeMode="contain"
-            ref={(ref) => (this.sketch = ref)}
-            strokeColor={this.state.color}
-            strokeWidth={this.state.width}
-            strokeAlpha={this.state.alpha}
             style={{
               flex: 1,
               position: "absolute",
               height: windowHeight,
               width: windowWidth,
+              justifyContent: "center",
+              alignItems: "center",
             }}
-            onChange={this.onChangeAsync}
-            onReady={this.onReady}
+            source={{
+              uri: this.state.image,
+            }}
+          />
+          {this.renderSketch()}
+
+          <TouchableOpacity
+            style={styles.undoButton}
+            activeOpacity={0.4}
+            onPress={this.undoMask}
+          >
+            <MaterialIcons name="rotate-left" size={26} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.clearButton}
+            activeOpacity={0.4}
+            onPress={this.clearMask}
+          >
+            <Fontisto name="eraser" size={20} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.saveButton}
+            activeOpacity={0.4}
+            onPress={this.saveMask}
+          >
+            <MaterialIcons name="check" size={26} color="white" />
+          </TouchableOpacity>
+          <Slider
+            style={styles.widthSlider}
+            step={5}
+            value={this.state.width}
+            minimumValue={20}
+            maximumValue={80}
+            onSlidingComplete={(val) => this.setState({ width: val })}
+            minimumTrackTintColor="#ffffffff"
+            maximumTrackTintColor="#ffffff25"
           />
         </View>
       );
     } else {
-      return (
-        <View
-          style={{
-            flex: 1,
-            position: "absolute",
-            height: windowHeight,
-            width: windowWidth,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <MaterialCommunityIcons
-            name="border-none-variant"
-            size={100}
-            color="white"
-          />
-          <Text
-            style={{
-              color: "white",
-              fontSize: 20,
-              padding: 20,
-            }}
-          >
-            파일을 업로드 해주세요!
-          </Text>
-        </View>
-      );
+      return <View style={{ flex: 1, backgroundColor: "#000" }}></View>;
     }
-  };
-
-  renderUser() {
-    return (
-      <View style={styles.container}>
-        <Image
-          resizeMode="contain"
-          style={{
-            flex: 1,
-          }}
-          source={{
-            uri: this.state.image,
-          }}
-        />
-        {this.renderSketch()}
-
-        <TouchableOpacity
-          style={styles.undoButton}
-          activeOpacity={0.4}
-          onPress={this.undoMask}
-        >
-          <MaterialIcons name="rotate-left" size={26} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.uploadButton}
-          activeOpacity={0.4}
-          onPress={this.uploadButton}
-        >
-          <MaterialIcons name="photo" size={26} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.clearButton}
-          activeOpacity={0.4}
-          onPress={this.clearMask}
-        >
-          <Fontisto name="eraser" size={20} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.saveButton}
-          activeOpacity={0.4}
-          onPress={this.saveMask}
-        >
-          <MaterialIcons name="check" size={26} color="white" />
-        </TouchableOpacity>
-        <Slider
-          style={styles.widthSlider}
-          step={5}
-          value={this.state.width}
-          minimumValue={20}
-          maximumValue={80}
-          onSlidingComplete={(val) => this.setState({ width: val })}
-          minimumTrackTintColor="#ffffffff"
-          maximumTrackTintColor="#ffffff25"
-        />
-      </View>
-    );
   }
 
   renderSelect = () => {

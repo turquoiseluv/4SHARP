@@ -37,7 +37,13 @@ export default class Select extends React.Component {
     imgLoaded: false,
     maskLoaded: false,
     userMode: false,
-    masks: [],
+    masks: [
+      {
+        id: 0,
+        uri: "",
+        selected: false,
+      },
+    ],
     maskLen: 0,
   };
 
@@ -49,8 +55,8 @@ export default class Select extends React.Component {
   maskDownloading = async () => {
     let session = this.state.sessionid;
     let masklength = 5;
-    for (let id = 0; id < masklength; id++) {
-      let masknumber = 1 + id;
+    for (let id = 1; id < masklength + 1; id++) {
+      let masknumber = id;
       const { masks } = this.state;
       await this.setState({
         masks: masks.concat({
@@ -108,13 +114,14 @@ export default class Select extends React.Component {
       });
       let x = Math.round(this.state.imageX);
       let y = Math.round(this.state.imageY);
-      console.log(x, y);
+      // console.log(x, y);
       fetch(
-        `http://zpunsss.dothome.co.kr/checking_mask_number.php?maskLen=${maskLen}&x=${x}&y=${y}`
+        `http://zpunsss.dothome.co.kr/checking_mask_number.php?maskLen=${this.state.masklength}&x=${x}&y=${y}`
       )
         .then((response) => response.text())
         .then((responseText) => {
           if (responseText) {
+            console.log(responseText);
             this.detectImageSelected(responseText);
           }
         })
@@ -131,7 +138,7 @@ export default class Select extends React.Component {
     let log = "";
     masks.map((mask) => {
       if (mask.selected == true) {
-        log += mask.id + 1 + " ";
+        log += mask.id + " ";
       }
     });
     log === ""
@@ -228,7 +235,7 @@ export default class Select extends React.Component {
   };
 
   renderUser = () => {
-    return <UserMask />;
+    return <UserMask uri={this.state.uri} />;
   };
 
   render() {
