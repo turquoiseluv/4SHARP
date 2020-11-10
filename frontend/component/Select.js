@@ -16,12 +16,6 @@ import UserMask from "./UserMask";
 import { AntDesign } from "@expo/vector-icons";
 import isIPhoneX from "react-native-is-iphonex";
 
-import mask1 from "../images/testing/1.png";
-import mask2 from "../images/testing/2.png";
-import mask3 from "../images/testing/3.png";
-import mask4 from "../images/testing/4.png";
-import mask5 from "../images/testing/5.png";
-
 const screen = Dimensions.get("window");
 
 export default class Select extends React.Component {
@@ -53,20 +47,24 @@ export default class Select extends React.Component {
   }
 
   maskDownloading = async () => {
-    let session = this.state.sessionid;
-    let masklength = 5;
-    for (let id = 1; id < masklength + 1; id++) {
-      let masknumber = id;
-      const { masks } = this.state;
-      await this.setState({
-        masks: masks.concat({
-          id: id,
-          uri: `http://zpunsss.dothome.co.kr/php/download/id_num/${masknumber}.png`,
-          selected: false,
-        }),
-      });
+    if (this.props.masks) {
+      this.setState({ masks: this.props.masks, maskLoaded: true });
+    } else {
+      let session = this.state.sessionid;
+      let masklength = 5;
+      for (let id = 1; id < masklength + 1; id++) {
+        let masknumber = id;
+        const { masks } = this.state;
+        await this.setState({
+          masks: masks.concat({
+            id: id,
+            uri: `http://zpunsss.dothome.co.kr/php/download/id_num/${masknumber}.png`,
+            selected: false,
+          }),
+        });
+      }
+      this.setState({ maskLoaded: true });
     }
-    this.setState({ maskLoaded: true });
   };
 
   detectImageSelected = (num) => {
@@ -189,25 +187,31 @@ export default class Select extends React.Component {
               " ]"}
           </Text>
         </View>
-        {this.renderTopBar()}
+        {this.renderBottomBar()}
       </View>
     );
   };
 
-  renderTopBar = () => {
+  renderBottomBar = () => {
     return (
-      <View style={styles.topB}>
-        <TouchableOpacity style={styles.backbtn} onPress={this.pressedBack}>
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={styles.bottomButtom}
+          onPress={this.pressedBack}
+        >
           <View>
             <AntDesign name="closecircleo" size={30} color="white" />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.backbtn} onPress={this.userMode}>
+        <TouchableOpacity style={styles.bottomButtom} onPress={this.userMode}>
           <View>
-            <MaterialCommunityIcons name="draw" size={30} color="white" />
+            <MaterialCommunityIcons name="draw" size={32} color="white" />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.backbtn} onPress={this.confirmSelect}>
+        <TouchableOpacity
+          style={styles.bottomButtom}
+          onPress={this.confirmSelect}
+        >
           <View>
             <AntDesign name="checkcircleo" size={30} color="white" />
           </View>
@@ -235,7 +239,13 @@ export default class Select extends React.Component {
   };
 
   renderUser = () => {
-    return <UserMask uri={this.state.uri} />;
+    return (
+      <UserMask
+        uri={this.state.uri}
+        masks={this.state.masks}
+        ratio={this.state.ratio}
+      />
+    );
   };
 
   render() {
@@ -270,15 +280,12 @@ const styles = StyleSheet.create({
     padding: 10,
     alignContent: "center",
   },
-  bottomB: {
+  bottomBar: {
     position: "absolute",
     width: screen.width,
-    bottom: isIPhoneX ? 75 : 35,
-  },
-  bottomBar: {
-    // backgroundColor: "green",
+    bottom: 35,
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "space-around",
   },
   bottomSideButton: {
     // backgroundColor: "blue",
@@ -286,13 +293,5 @@ const styles = StyleSheet.create({
     flex: 0.75,
     alignItems: "center",
     justifyContent: "center",
-  },
-  topB: {
-    position: "absolute",
-    width: screen.width,
-    top: isIPhoneX ? 75 : 35,
-    padding: 30,
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
 });

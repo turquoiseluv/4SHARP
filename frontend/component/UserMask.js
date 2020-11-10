@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Constants from "expo-constants";
 import ExpoPixi from "expo-pixi";
-import { MaterialIcons, Fontisto } from "@expo/vector-icons";
+import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Select from "./Select";
 
 import * as ImagePicker from "expo-image-picker";
@@ -26,6 +26,7 @@ YellowBox.ignoreWarnings([
   "source.uri should not be an empty string",
 ]);
 
+const screen = Dimensions.get("window");
 const windowWidth = Dimensions.get("window").width;
 const windowHeight = Dimensions.get("window").height;
 
@@ -127,7 +128,7 @@ export default class UserMode extends Component {
             },
           },
         ],
-        {}
+        { format: ImageManipulator.SaveFormat.PNG }
       );
       // console.log(manipResult);
 
@@ -140,6 +141,10 @@ export default class UserMode extends Component {
         goBack: true,
       });
     }
+  };
+
+  pressedBack = () => {
+    this.setState({ goBack: !this.state.goBack });
   };
 
   undoMask = () => {
@@ -215,6 +220,47 @@ export default class UserMode extends Component {
     );
   };
 
+  renderBottomBar = () => {
+    return (
+      <View style={styles.bottomB}>
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            style={styles.bottomButton}
+            activeOpacity={0.4}
+            onPress={this.pressedBack}
+          >
+            <MaterialIcons name="close" size={32} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomButton}
+            activeOpacity={0.4}
+            onPress={this.undoMask}
+          >
+            <MaterialIcons name="rotate-left" size={32} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomButton}
+            activeOpacity={0.4}
+            onPress={this.clearMask}
+          >
+            <MaterialCommunityIcons
+              name="delete-sweep"
+              size={30}
+              color="white"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomButton}
+            activeOpacity={0.4}
+            onPress={this.saveMask}
+          >
+            <MaterialIcons name="check" size={32} color="white" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
   renderUser() {
     if (this.state.imgLoaded == true) {
       return (
@@ -233,29 +279,11 @@ export default class UserMode extends Component {
               uri: this.state.image,
             }}
           />
+          {this.renderMask()}
           {this.renderSketch()}
 
-          <TouchableOpacity
-            style={styles.undoButton}
-            activeOpacity={0.4}
-            onPress={this.undoMask}
-          >
-            <MaterialIcons name="rotate-left" size={26} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.clearButton}
-            activeOpacity={0.4}
-            onPress={this.clearMask}
-          >
-            <Fontisto name="eraser" size={20} color="white" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.saveButton}
-            activeOpacity={0.4}
-            onPress={this.saveMask}
-          >
-            <MaterialIcons name="check" size={26} color="white" />
-          </TouchableOpacity>
+          {this.renderBottomBar()}
+
           <Slider
             style={styles.widthSlider}
             step={5}
@@ -274,7 +302,25 @@ export default class UserMode extends Component {
   }
 
   renderSelect = () => {
-    return <Select />;
+    return <Select masks={this.props.masks} />;
+  };
+
+  renderMask = () => {
+    const { masks } = this.props;
+    //masks가 불려오기 전에 호출하지 않게...
+    const list = masks.map((info) => (
+      <Image
+        source={{ uri: info.uri }}
+        style={{
+          width: screen.width,
+          height: screen.height,
+          position: "absolute",
+          tintColor: masks[info.id].selected ? "#e44888ff" : "#00000000",
+        }}
+        resizeMode={"contain"}
+      />
+    ));
+    return list;
   };
 
   render() {
@@ -344,5 +390,20 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: "#000",
+  },
+  bottomB: {
+    position: "absolute",
+    width: screen.width,
+    bottom: 35,
+  },
+  bottomBar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  bottomSideButton: {
+    height: 75,
+    flex: 0.75,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

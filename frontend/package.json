@@ -37,7 +37,8 @@
     "react-native-screens": "~2.9.0",
     "react-native-web": "~0.11.7",
     "react-navigation-animated-switch": "^0.6.0",
-    "react-navigation-hooks": "^1.1.0"
+    "react-navigation-hooks": "^1.1.0",
+    "react-redux": "^7.2.2"
   },
   "devDependencies": {
     "babel-preset-expo": "^8.2.3"
