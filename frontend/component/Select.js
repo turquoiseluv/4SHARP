@@ -9,12 +9,11 @@ import {
   StatusBar,
   Alert,
 } from "react-native";
-import { Foundation, Entypo, MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ImageZoom from "react-native-image-pan-zoom";
 import Home from "./Home";
 import UserMask from "./UserMask";
 import { AntDesign } from "@expo/vector-icons";
-import isIPhoneX from "react-native-is-iphonex";
 
 const screen = Dimensions.get("window");
 
@@ -36,6 +35,7 @@ export default class Select extends React.Component {
         id: 0,
         uri: "",
         selected: false,
+        key: 0,
       },
     ],
     maskLen: 0,
@@ -60,6 +60,7 @@ export default class Select extends React.Component {
             id: id,
             uri: `http://zpunsss.dothome.co.kr/php/download/id_num/${masknumber}.png`,
             selected: false,
+            key: id,
           }),
         });
       }
@@ -233,6 +234,7 @@ export default class Select extends React.Component {
           tintColor: masks[info.id].selected ? "#e4488877" : "#28aaaa77",
         }}
         resizeMode={"contain"}
+        key={info.key}
       />
     ));
     return list;

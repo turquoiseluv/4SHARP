@@ -1,8 +1,6 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component } from "react";
 import Slider from "@react-native-community/slider";
 import {
-  Alert,
-  Text,
   View,
   StyleSheet,
   TouchableOpacity,
@@ -318,6 +316,7 @@ export default class UserMode extends Component {
           tintColor: masks[info.id].selected ? "#e44888ff" : "#00000000",
         }}
         resizeMode={"contain"}
+        key={info.key}
       />
     ));
     return list;
