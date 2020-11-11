@@ -381,7 +381,11 @@ export default class Home extends React.Component {
       );
     }
     return (
-      <Select uri={this.state.data} mask_length={this.state.mask_length} />
+      <Select
+        sessionid={this.state.sessionid}
+        uri={this.state.data}
+        mask_length={this.state.mask_length}
+      />
     );
   };
 

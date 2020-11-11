@@ -26,6 +26,6 @@ export default class Timer extends React.Component {
   render() {
     //첫 로고 화면
     const { isLogo } = this.state;
-    return isLogo ? <LogoScreen /> : <Home />;
+    return isLogo ? <LogoScreen /> : <Select />;
   }
 }

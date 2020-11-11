@@ -19,7 +19,11 @@ const screen = Dimensions.get("window");
 
 export default class Select extends React.Component {
   state = {
+    sessionid: "B179A8B3",
+    // sessionid: this.props.sessionid,
     uri: this.props.uri,
+    maskLen: "6",
+    // maskLen: this.props.mask_length,
     ratio: 0,
     scale: 0,
     axisX: 0,
@@ -38,11 +42,9 @@ export default class Select extends React.Component {
         key: 0,
       },
     ],
-    maskLen: 0,
   };
 
   componentDidMount() {
-    console.log(this.props.mask_length);
     this.imageDownloading();
     this.maskDownloading();
   }
@@ -51,15 +53,13 @@ export default class Select extends React.Component {
     if (this.props.masks) {
       this.setState({ masks: this.props.masks, maskLoaded: true });
     } else {
-      let session = this.state.sessionid;
-      let masklength = 5;
-      for (let id = 1; id < masklength + 1; id++) {
+      for (let id = 1; id < this.state.maskLen + 1; id++) {
         let masknumber = id;
         const { masks } = this.state;
         await this.setState({
           masks: masks.concat({
             id: id,
-            uri: `http://zpunsss.dothome.co.kr/php/download/id_num/${masknumber}.png`,
+            uri: `http://winners.dothome.co.kr/${this.state.sessionid}/${masknumber}.png`,
             selected: false,
             key: id,
           }),
@@ -116,7 +116,7 @@ export default class Select extends React.Component {
       let y = Math.round(this.state.imageY);
       // console.log(x, y);
       fetch(
-        `http://zpunsss.dothome.co.kr/checking_mask_number.php?maskLen=${this.state.masklength}&x=${x}&y=${y}`
+        `http://winners.dothome.co.kr/checking_mask_number.php?maskLen=${this.state.maskLen}&x=${x}&y=${y}&session=${this.state.sessionid}`
       )
         .then((response) => response.text())
         .then((responseText) => {
