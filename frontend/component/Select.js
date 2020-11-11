@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   StatusBar,
-  Alert,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ImageZoom from "react-native-image-pan-zoom";
@@ -131,17 +130,29 @@ export default class Select extends React.Component {
     this.setState({ goBack: !this.state.goBack });
   };
 
-  confirmSelect = () => {
+  submit = () => {
     const { masks } = this.state;
-    let log = "";
+
+    var result = [];
+
     masks.map((mask) => {
       if (mask.selected == true) {
-        log += mask.id + " ";
+        result.push(mask.id);
       }
     });
-    log === ""
-      ? Alert.alert("no mask selected!")
-      : Alert.alert(log + "mask selected.");
+
+    console.log(result);
+
+    fetch(`http://192.168.219.100/test.php?session=${this.state.sessionid}`, {
+      method: "POST", // or 'PUT'
+      body: JSON.stringify(result), // data can be `string` or {object}!
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.text())
+      .then((res) => console.log(res))
+      .catch((error) => console.error("Error:", error));
   };
 
   renderHome = () => {
@@ -208,10 +219,7 @@ export default class Select extends React.Component {
             <MaterialCommunityIcons name="draw" size={32} color="white" />
           </View>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.bottomButtom}
-          onPress={this.confirmSelect}
-        >
+        <TouchableOpacity style={styles.bottomButtom} onPress={this.submit}>
           <View>
             <AntDesign name="checkcircleo" size={30} color="white" />
           </View>

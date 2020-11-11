@@ -8,6 +8,8 @@ import {
   Dimensions,
   StatusBar,
   Alert,
+  Image,
+  ActivityIndicator,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
@@ -29,6 +31,8 @@ import Constants from "expo-constants";
 import isIPhoneX from "react-native-is-iphonex";
 // 이미지 선택 후 이미지뷰어 화면
 import Select from "./Select";
+
+import PaperMan from "../images/PaperLogo/PaperMan.png";
 
 const screen = Dimensions.get("window");
 
@@ -371,13 +375,40 @@ export default class Home extends React.Component {
   renderSelect = () => {
     if (!this.state.maskLen) {
       return (
-        <View>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#222222",
+          }}
+        >
+          <StatusBar barStyle={"light-content"} translucent={true} />
           <AppLoading
             startAsync={this.imageUploading}
             onFinish={() => this.setState({ maskLen: this.state.maskLen })}
             onError={console.warn}
           />
-          <Text>asdfadfssdfadfsasdfadfsasdfadfsasdfadfsasdfadfsaafasdf</Text>
+          <View
+            style={{
+              width: screen.width,
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
+          >
+            {this.renderPaperMan(6)}
+          </View>
+          <Text
+            style={{
+              color: "#FFFFFF",
+              fontSize: 25,
+              paddingTop: 35,
+              paddingBottom: 20,
+            }}
+          >
+            LOADING...
+          </Text>
+          <ActivityIndicator size="small" color="#fff" />
         </View>
       );
     }
@@ -388,6 +419,19 @@ export default class Home extends React.Component {
         maskLen={this.state.maskLen}
       />
     );
+  };
+
+  renderPaperMan = (num) => {
+    return [...Array(num)].map(() => (
+      <Image
+        style={{
+          width: 80,
+          height: 135,
+          tintColor: Math.random() < 0.5 ? "#e44888" : "#28aaaa",
+        }}
+        source={PaperMan}
+      />
+    ));
   };
 
   render() {
