@@ -2,10 +2,11 @@ import React from "react";
 import { Text, View, StatusBar, Image, ActivityIndicator } from "react-native";
 import PaperMan from "../images/PaperLogo/PaperMan.png";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
-import { AppLoading } from "expo";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default class Loading extends React.Component {
   state = {
+    listLen: 6,
     colorList: [],
     count: 0,
     test: [],
@@ -14,11 +15,11 @@ export default class Loading extends React.Component {
   };
 
   componentDidMount() {
-    this.getList(6);
+    this.getList();
   }
 
-  getList = async (num) => {
-    for (let id = 0; id < num; id++) {
+  getList = async () => {
+    for (let id = 0; id < 6; id++) {
       const { colorList } = this.state;
       let temp = Math.random() < 0.5;
       await this.setState({
@@ -27,6 +28,7 @@ export default class Loading extends React.Component {
           chosen: temp,
           key: id,
         }),
+        test: this.state.test.concat(temp),
       });
     }
   };
@@ -52,11 +54,51 @@ export default class Loading extends React.Component {
 
   changeColor = (num) => {
     const { colorList } = this.state;
+    let newTest = this.state.test.slice();
+    newTest[num] = !this.state.test[num];
     this.setState({
       colorList: colorList.map((color) =>
         color.id == num ? { ...color, chosen: !color.chosen } : color
       ),
+      test: newTest,
     });
+  };
+
+  allReward = () => {
+    if (this.state.test.length == this.state.listLen) {
+      if (this.state.test.every((val) => val)) {
+        return (
+          <MaterialCommunityIcons
+            name="crown"
+            size={150}
+            color="#e44888"
+            style={{
+              position: "absolute",
+              top: 150,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+            }}
+          />
+        );
+      }
+      if (this.state.test.every((val) => !val)) {
+        return (
+          <MaterialCommunityIcons
+            name="crown"
+            size={150}
+            color="#28aaaa"
+            style={{
+              position: "absolute",
+              top: 150,
+              left: 0,
+              right: 0,
+              textAlign: "center",
+            }}
+          />
+        );
+      }
+    }
   };
 
   render() {
@@ -70,11 +112,7 @@ export default class Loading extends React.Component {
         }}
       >
         <StatusBar barStyle={"light-content"} translucent={true} />
-        <AppLoading
-          startAsync={this.imageUploading}
-          onFinish={() => this.setState({ maskLen: this.state.maskLen })}
-          onError={console.warn}
-        />
+        {this.allReward()}
         <View
           style={{
             width: screen.width,
@@ -89,8 +127,8 @@ export default class Loading extends React.Component {
         <Text
           style={{
             color: "#FFFFFF",
-            fontSize: 25,
-            paddingTop: 35,
+            fontSize: 30,
+            paddingTop: 40,
             paddingBottom: 20,
             textAlign: "center",
           }}

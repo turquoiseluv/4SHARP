@@ -8,8 +8,6 @@ import {
   Dimensions,
   StatusBar,
   Alert,
-  Image,
-  ActivityIndicator,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
@@ -20,14 +18,10 @@ import {
   Entypo,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
-import { AppLoading } from "expo";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
-import {
-  PinchGestureHandler,
-  State,
-  TouchableWithoutFeedback,
-} from "react-native-gesture-handler";
+import { PinchGestureHandler, State } from "react-native-gesture-handler";
+import { AppLoading } from "expo";
 
 // StatusBar 등의 가변 객체 정보
 import Constants from "expo-constants";
@@ -377,7 +371,16 @@ export default class Home extends React.Component {
 
   renderSelect = () => {
     if (!this.state.maskLen) {
-      return <Loading />;
+      return (
+        <View style={{ flex: 1 }}>
+          <AppLoading
+            startAsync={this.imageUploading}
+            onFinish={() => this.setState({ maskLen: this.state.maskLen })}
+            onError={console.warn}
+          />
+          <Loading />
+        </View>
+      );
     }
     return (
       <Select
