@@ -1,21 +1,35 @@
-def MaskDownload(name):
-    import ftplib, os
+def MaskDownload(name, maskCnt):
+    import ftplib, os, time
+    import cv2 as cv
+    import numpy as np
 
-    CUR_DIR = os.path.abspath("./workspace/"+name+"/mask")
+    CUR_DIR = os.path.abspath("./workspace/"+name+"/tmask")
 
     ses = ftplib.FTP("winners.dothome.co.kr", "winners", "tkdals96!")
     ses.cwd("./html/"+name)
 
+    while True:
+        lines = []
+        ses.retrlines("RETR " + name+'.txt', lines.append)
+        if lines[0] != str(maskCnt): break
+        time.sleep(2)
 
-    listdir = os.listdir(CUR_DIR)
-    print(listdir)
-    for i in listdir:
-        with open(os.path.join(CUR_DIR, i), 'rb') as localfile:
-            ses.storbinary("STOR " + i, localfile)
+    maskNum = lines[0].split()
+    shape = cv.imread(os.path.join(CUR_DIR, '0.png')).shape
+    if maskNum[0] == '0':
+        with open(os.path.join(CUR_DIR, '0.png'), 'wb') as localfile:
+            ses.retrbinary("RETR " + '0.png', localfile.write)
         localfile.close()
+        image = cv.imread(os.path.join(CUR_DIR, '0.png'))
+        image = cv.resize(image, (shape[1], shape[0]))
+        cv.imwrite(os.path.join(CUR_DIR, "0.png"), image)
 
-    with open(os.path.abspath(f"./workspace/{name}/{name}.txt"), 'rb') as localfile:
-        ses.storbinary("STOR " + f"{name}.txt", localfile)
-        localfile.close()
+    mask = np.zeros(shape=shape, dtype=np.uint8)
+    for i in maskNum:
+        mask += cv.imread(os.path.join(CUR_DIR, i+'.png'))
+    cv.imwrite(os.path.join(CUR_DIR, "mask.png"), mask)
 
     return 0
+
+if __name__ == '__main__':
+    MaskDownload('416CA790', 6)

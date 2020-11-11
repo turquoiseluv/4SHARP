@@ -12,10 +12,16 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 from imgdownload import ImgDownload
 from maskupload import MaskUpload
 from maskdownload import MaskDownload
+from imgupload import ImgUpload
 
 from mrcnn import visualize
 from mrcnn.config import Config
 from mrcnn import model as modellib
+
+import tensorflow as tf
+tf.compat.v1.logging.set_verbosity("ERROR")
+import neuralgym as ng
+from inpaint_model import InpaintCAModel
 
 ROOT_DIR = os.path.abspath("./")
 WAIT_DIR = os.path.abspath("./waiting")
@@ -126,8 +132,60 @@ def detectP(name):
     os.remove(os.path.join(CUR_DIR, filename[0]))
     return maskCnt
 
+def inpaintP(name):
+    CUR_DIR = os.path.join(WORK_DIR, name)
+    TMASK_DIR = os.path.join(WORK_DIR, name+"//tmask")
+    INPAINT_MODEL_PATH = os.path.join(ROOT_DIR, "model_logs/release_places2_256")
+
+    FLAGS = ng.Config('inpaint.yml')
+    model = InpaintCAModel()
+
+    image = cv.imread(os.path.join(CUR_DIR, f"{name}.png"))
+    mask = cv.imread(os.path.join(TMASK_DIR, "mask.png"))
+    filename = f'4#_{name}.png'
+
+    assert image.shape == mask.shape
+
+    h, w, _ = image.shape
+    grid = 8
+    image = image[:h//grid*grid, :w//grid*grid, :]
+    mask = mask[:h//grid*grid, :w//grid*grid, :]
+    print('Shape of image: {}'.format(image.shape))
+
+    image = np.expand_dims(image, 0)
+    mask = np.expand_dims(mask, 0)
+    input_image = np.concatenate([image, mask], axis=2)
+
+    sess_config = tf.ConfigProto()
+    sess_config.gpu_options.per_process_gpu_memory_fraction = 0.5
+    tf2 = tf.Graph()
+    with tf2.as_default():
+        with tf.Session(config=sess_config) as sess:
+            input_image = tf.constant(input_image, dtype=tf.float32)
+
+            output = model.build_server_graph(FLAGS, input_image)
+            output = (output + 1.) * 127.5
+            output = tf.reverse(output, [-1])
+            output = tf.saturate_cast(output, tf.uint8)
+
+            # load pretrained model
+            vars_list = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES)
+            assign_ops = []
+            for var in vars_list:
+                vname = var.name
+                from_name = vname
+                var_value = tf.contrib.framework.load_variable(INPAINT_MODEL_PATH, from_name)
+                assign_ops.append(tf.assign(var, var_value))
+
+            sess.run(assign_ops)
+            print('Model loaded.')
+            result = sess.run(output)
+            cv.imwrite(os.path.join(CUR_DIR, filename), result[0][:, :, ::-1])
+
+    return 0
+
 def process(name):
-    print("detectP start")
+    print("4# start")
     maskCnt = detectP(name)
     while True:
         if os.path.exists(os.path.join(WORK_DIR, name+"/"+name+".txt")) == False:
@@ -136,14 +194,15 @@ def process(name):
         time.sleep(1)
         break
     MaskUpload(name)
-    #MaskDownload(name, maskCnt)
-    print("detectP end")
+    MaskDownload(name, maskCnt)
+    inpaintP(name)
+    ImgUpload(name, maskCnt)
+    print("4# end")
     return 0
 
 imgd = threading.Thread(target=ImgDownload)
 imgd.daemon = True
 imgd.start()
-
 
 while True:
     waiting = os.listdir(WAIT_DIR)
