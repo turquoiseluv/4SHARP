@@ -322,7 +322,7 @@ export default class Home extends React.Component {
     );
   };
 
-  imageUploading = async () => {
+  imageUploading = () => {
     const id = this.state.sessionid;
     console.log(this.state.sessionid);
 
@@ -332,9 +332,10 @@ export default class Home extends React.Component {
 
     form.append("test", {
       uri: uri,
+      type: "image",
       name: id, //파일이름 변경할 시 변경
     });
-    await fetch("http://winners.dothome.co.kr/image_upload.php", {
+    fetch("http://winners.dothome.co.kr/image_upload.php", {
       method: "POST",
       body: form,
       headers: {
@@ -344,11 +345,11 @@ export default class Home extends React.Component {
     })
       .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
       .then((responseJson) => {
-        //console.log(responseJson);
+        console.log(responseJson);
         this.setState({
           mask_length: responseJson,
         });
-        console.log(this.state.mask_length);
+        //console.log(this.state.mask_length);
         // 성공시 카메라로 or 알림 닫기
         Alert.alert(
           "Upload Successful",
