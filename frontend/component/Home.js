@@ -64,6 +64,7 @@ const wbIcons = {
 
 export default class Home extends React.Component {
   state = {
+    sessionid: null,
     camPerm: false,
     camRollPerm: false,
     hasPermission: false, //권한
@@ -81,6 +82,7 @@ export default class Home extends React.Component {
     newPhotos: false,
     showMoreOptions: false,
     //프레임 보기/숨기기
+    galleryMode: false,
     showFrame: true,
     showSelect: false,
 
@@ -91,6 +93,9 @@ export default class Home extends React.Component {
   };
 
   componentDidMount() {
+    this.setState({
+      sessionid: Constants.sessionId.slice(0, 8),
+    });
     this.getPermissionAsync();
     this.getPermissionRollAsync();
   }
@@ -152,10 +157,12 @@ export default class Home extends React.Component {
 
   pickImage = async () => {
     //album에서 사진 가져오는 메소드
+    this.setState({ galleryMode: true });
     const { uri } = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
     this.setState({
+      galleryMode: false,
       newPhotos: false,
       showSelect: true,
       data: uri,
@@ -259,7 +266,10 @@ export default class Home extends React.Component {
 
   renderCamera = () => (
     <View style={{ flex: 1 }}>
-      <StatusBar barStyle="light-content" translucent={true} />
+      <StatusBar
+        barStyle={this.state.galleryMode ? "dark-content" : "light-content"}
+        translucent={true}
+      />
       <View
         style={[
           this.state.showFrame ? styles.topFrameBlack : styles.topFrameTrans,
@@ -309,7 +319,65 @@ export default class Home extends React.Component {
     );
   };
 
+  imageUploading = (uri) => {
+    const id = this.state.sessionid;
+
+    console.log(this.state.sessionid);
+
+    const form = new FormData();
+
+    let ext = uri;
+    ext = ext.slice(((ext.lastIndexOf(".") - 1) >>> 0) + 2);
+    let name = ".".concat(ext);
+
+    name = id.concat(name);
+    console.log(ext);
+    console.log(uri);
+
+    form.append("test", {
+      uri: uri,
+      type: "image",
+      name: name, //파일이름 변경할 시 변경
+    });
+
+    console.log(uri);
+    fetch("http://winners.dothome.co.kr/image_upload.php", {
+      method: "POST",
+      body: form,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data",
+        title: "test",
+        name: "aaaa",
+      },
+    })
+      .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
+      .then((responseJson) => {
+        //console.log(responseJson);
+        this.setState({
+          mask_length: responseJson,
+        });
+        console.log(this.state.mask_length);
+        // 성공시 카메라로 or 알림 닫기
+        Alert.alert(
+          "Upload Successful",
+          "성공적으로 업로드 되었습니다.",
+          [
+            { text: "카메라", onPress: this.pressedBack },
+            { text: "닫기", onPress: () => console.log("닫기 누름") },
+          ],
+          { cancelable: false }
+        );
+      })
+      .catch((error) => {
+        console.log(error);
+        Alert.alert("Upload Failed", "업로드가 실패했습니다.");
+        // 실패시 알림 확인만
+      });
+  };
+
   renderSelect = () => {
+    this.imageUploading(this.state.data);
     return <Select uri={this.state.data} />;
   };
 
