@@ -19,11 +19,9 @@ const screen = Dimensions.get("window");
 
 export default class Select extends React.Component {
   state = {
-    sessionid: "B179A8B3",
-    // sessionid: this.props.sessionid,
+    sessionid: this.props.sessionid,
     uri: this.props.uri,
-    maskLen: "6",
-    // maskLen: this.props.mask_length,
+    maskLen: this.props.maskLen,
     ratio: 0,
     scale: 0,
     axisX: 0,
@@ -53,7 +51,7 @@ export default class Select extends React.Component {
     if (this.props.masks) {
       this.setState({ masks: this.props.masks, maskLoaded: true });
     } else {
-      for (let id = 1; id < this.state.maskLen + 1; id++) {
+      for (let id = 1; id < this.state.maskLen; id++) {
         let masknumber = id;
         const { masks } = this.state;
         await this.setState({
@@ -114,7 +112,7 @@ export default class Select extends React.Component {
       });
       let x = Math.round(this.state.imageX);
       let y = Math.round(this.state.imageY);
-      // console.log(x, y);
+      console.log(x, y, this.state.maskLen, this.state.sessionid);
       fetch(
         `http://winners.dothome.co.kr/checking_mask_number.php?maskLen=${this.state.maskLen}&x=${x}&y=${y}&session=${this.state.sessionid}`
       )
@@ -247,6 +245,8 @@ export default class Select extends React.Component {
         uri={this.state.uri}
         masks={this.state.masks}
         ratio={this.state.ratio}
+        maskLen={this.state.maskLen}
+        sessionid={this.state.sessionid}
       />
     );
   };

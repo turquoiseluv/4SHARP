@@ -73,7 +73,7 @@ export default class Home extends React.Component {
     cameraType: Camera.Constants.Type.back, //전면 카메라, 후면카메라 현재값은 후면카메라
     selected: false, //사진 data값이 생기면 다음화면으로 넘어가기 위해 설정한 state
     data: null, //사진의 uri 값을 넣기 위한 state
-    mask_length: null,
+    maskLen: null,
 
     // 부가 옵션들
     flash: "off",
@@ -347,9 +347,9 @@ export default class Home extends React.Component {
       .then((responseJson) => {
         console.log(responseJson);
         this.setState({
-          mask_length: responseJson,
+          maskLen: responseJson.slice(1, -1),
         });
-        //console.log(this.state.mask_length);
+        //console.log(this.state.maskLen);
         // 성공시 카메라로 or 알림 닫기
         Alert.alert(
           "Upload Successful",
@@ -369,22 +369,23 @@ export default class Home extends React.Component {
   };
 
   renderSelect = () => {
-    if (!this.state.mask_length) {
+    if (!this.state.maskLen) {
       return (
-        <AppLoading
-          startAsync={this.imageUploading}
-          onFinish={() =>
-            this.setState({ mask_length: this.state.mask_length })
-          }
-          onError={console.warn}
-        />
+        <View>
+          <AppLoading
+            startAsync={this.imageUploading}
+            onFinish={() => this.setState({ maskLen: this.state.maskLen })}
+            onError={console.warn}
+          />
+          <Text>asdfadfssdfadfsasdfadfsasdfadfsasdfadfsasdfadfsaafasdf</Text>
+        </View>
       );
     }
     return (
       <Select
         sessionid={this.state.sessionid}
         uri={this.state.data}
-        mask_length={this.state.mask_length}
+        maskLen={this.state.maskLen}
       />
     );
   };
