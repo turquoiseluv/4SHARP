@@ -7,6 +7,7 @@ import {
   Animated,
   Dimensions,
   StatusBar,
+  Alert,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
@@ -17,6 +18,7 @@ import {
   Entypo,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
+import { AppLoading } from "expo";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { PinchGestureHandler, State } from "react-native-gesture-handler";
@@ -168,7 +170,6 @@ export default class Home extends React.Component {
       showSelect: true,
       data: uri,
     });
-    this.imageUploading(this.state.data);
   };
 
   renderTopBar = () => (
@@ -321,36 +322,24 @@ export default class Home extends React.Component {
     );
   };
 
-  imageUploading = async (uri) => {
+  imageUploading = async () => {
     const id = this.state.sessionid;
-
     console.log(this.state.sessionid);
 
     const form = new FormData();
 
-    let ext = uri;
-    ext = ext.slice(((ext.lastIndexOf(".") - 1) >>> 0) + 2);
-    let name = ".".concat(ext);
-
-    name = id.concat(name);
-    console.log(ext);
-    console.log(uri);
+    let uri = this.state.data;
 
     form.append("test", {
       uri: uri,
-      type: "image",
-      name: name, //파일이름 변경할 시 변경
+      name: id, //파일이름 변경할 시 변경
     });
-
-    console.log(uri);
     await fetch("http://winners.dothome.co.kr/image_upload.php", {
       method: "POST",
       body: form,
       headers: {
         Accept: "application/json",
         "Content-Type": "multipart/form-data",
-        title: "test",
-        name: "aaaa",
       },
     })
       .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
@@ -379,7 +368,20 @@ export default class Home extends React.Component {
   };
 
   renderSelect = () => {
-    return <Select uri={this.state.data} />;
+    if (!this.state.mask_length) {
+      return (
+        <AppLoading
+          startAsync={this.imageUploading}
+          onFinish={() =>
+            this.setState({ mask_length: this.state.mask_length })
+          }
+          onError={console.warn}
+        />
+      );
+    }
+    return (
+      <Select uri={this.state.data} mask_length={this.state.mask_length} />
+    );
   };
 
   render() {
@@ -388,7 +390,7 @@ export default class Home extends React.Component {
         ? this.renderCamera()
         : this.renderNoPermission();
     const content =
-      this.state.showSelect && this.state.data && this.state.mask_length
+      this.state.showSelect && this.state.data
         ? this.renderSelect()
         : cameraScreenContent;
     return content;

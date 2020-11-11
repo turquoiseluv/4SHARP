@@ -42,6 +42,7 @@ export default class Select extends React.Component {
   };
 
   componentDidMount() {
+    console.log(this.props.mask_length);
     this.imageDownloading();
     this.maskDownloading();
   }
