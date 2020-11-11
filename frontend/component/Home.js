@@ -71,6 +71,7 @@ export default class Home extends React.Component {
     cameraType: Camera.Constants.Type.back, //전면 카메라, 후면카메라 현재값은 후면카메라
     selected: false, //사진 data값이 생기면 다음화면으로 넘어가기 위해 설정한 state
     data: null, //사진의 uri 값을 넣기 위한 state
+    mask_length: null,
 
     // 부가 옵션들
     flash: "off",
@@ -167,6 +168,7 @@ export default class Home extends React.Component {
       showSelect: true,
       data: uri,
     });
+    this.imageUploading(this.state.data);
   };
 
   renderTopBar = () => (
@@ -319,7 +321,7 @@ export default class Home extends React.Component {
     );
   };
 
-  imageUploading = (uri) => {
+  imageUploading = async (uri) => {
     const id = this.state.sessionid;
 
     console.log(this.state.sessionid);
@@ -341,7 +343,7 @@ export default class Home extends React.Component {
     });
 
     console.log(uri);
-    fetch("http://winners.dothome.co.kr/image_upload.php", {
+    await fetch("http://winners.dothome.co.kr/image_upload.php", {
       method: "POST",
       body: form,
       headers: {
@@ -377,7 +379,6 @@ export default class Home extends React.Component {
   };
 
   renderSelect = () => {
-    this.imageUploading(this.state.data);
     return <Select uri={this.state.data} />;
   };
 
@@ -387,7 +388,7 @@ export default class Home extends React.Component {
         ? this.renderCamera()
         : this.renderNoPermission();
     const content =
-      this.state.showSelect && this.state.data
+      this.state.showSelect && this.state.data && this.state.mask_length
         ? this.renderSelect()
         : cameraScreenContent;
     return content;
