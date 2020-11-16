@@ -82,6 +82,14 @@ export default class UserMode extends Component {
   uploadImageAsync = async (uri) => {
     // let uriParts = uri.split(".");
     // let fileType = uriParts[uriParts.length - 1];
+    const { masks } = this.props;
+    var result = [0];
+
+    masks.map((mask) => {
+      if (mask.selected == true) {
+        result.push(mask.id);
+      }
+    });
 
     const form = new FormData();
     form.append("mask", {
