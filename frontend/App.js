@@ -2,6 +2,7 @@ import * as React from "react";
 import LogoScreen from "./component/LogoScreen";
 import Home from "./component/Home";
 import Select from "./component/Select";
+import Result from "./component/Result";
 
 import { YellowBox } from "react-native";
 YellowBox.ignoreWarnings(["Require cycle:"]);
@@ -26,6 +27,6 @@ export default class Timer extends React.Component {
   render() {
     //첫 로고 화면
     const { isLogo } = this.state;
-    return isLogo ? <LogoScreen /> : <Home />;
+    return isLogo ? <LogoScreen /> : <Result />;
   }
 }
