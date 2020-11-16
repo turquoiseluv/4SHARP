@@ -96,14 +96,17 @@ export default class UserMode extends Component {
       uri: uri,
       name: "0", //파일이름 변경할 시 변경
     });
-    await fetch("http://zpunsss.dothome.co.kr/image_upload_user.php", {
-      method: "POST",
-      body: form,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "multipart/form-data",
-      },
-    })
+    await fetch(
+      `http://winners.dothome.co.kr/image_upload_user.php?session=${this.props.sessionid}`,
+      {
+        method: "POST",
+        body: form,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    )
       .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
       .then((responseJson) => {
         console.log(responseJson);
@@ -111,6 +114,20 @@ export default class UserMode extends Component {
       .catch((error) => {
         console.log(error);
       });
+
+    await fetch(
+      `http://winners.dothome.co.kr/inpainting.php?session=${this.props.sessionid}`,
+      {
+        method: "POST", // or 'PUT'
+        body: JSON.stringify(result), // data can be `string` or {object}!
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
+      .then((response) => response.text())
+      .then((res) => console.log(res))
+      .catch((error) => console.error("Error:", error));
   };
 
   saveMask = async () => {

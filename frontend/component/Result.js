@@ -8,7 +8,6 @@ import {
   Image,
   Text,
   Alert,
-  Linking,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
@@ -21,8 +20,8 @@ const screen = Dimensions.get("window");
 
 export default class Result extends React.Component {
   state = {
-    sessionid: null,
-    uri: "http://winners.dothome.co.kr/original/4%23_original.png",
+    sessionid: this.props.sessionid,
+    uri: `http://winners.dothome.co.kr/${this.props.sessionid}/4%23_${this.props.sessionid}.png`,
     goBack: false,
   };
 
@@ -66,13 +65,10 @@ export default class Result extends React.Component {
   };
 
   _downloadFile = async () => {
-    console.log("#####");
     const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-    console.log(status);
 
     //permission for camera_roll
     if (status === "granted") {
-      console.log("#####");
       //store the cached file
       const file = await FileSystem.downloadAsync(
         this.state.uri,
@@ -83,6 +79,12 @@ export default class Result extends React.Component {
       //save the image in the galery using the link of the cached file
       const assetLink = await MediaLibrary.createAssetAsync(file.uri);
       console.log(file, assetLink);
+      Alert.alert(
+        "저장 완료",
+        "이미지 갤러리에 저장되었습니다.",
+        [{ text: "확인", onPress: () => this.pressedBack() }],
+        { cancelable: false }
+      );
     }
   };
 

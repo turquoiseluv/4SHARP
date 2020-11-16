@@ -13,6 +13,8 @@ import ImageZoom from "react-native-image-pan-zoom";
 import Home from "./Home";
 import UserMask from "./UserMask";
 import { AntDesign } from "@expo/vector-icons";
+import Loading from "./Loading";
+import Result from "./Result";
 
 const screen = Dimensions.get("window");
 
@@ -31,6 +33,8 @@ export default class Select extends React.Component {
     imgLoaded: false,
     maskLoaded: false,
     userMode: false,
+    isWaiting: false,
+    submitDone: false,
     masks: [
       {
         id: 0,
@@ -131,6 +135,7 @@ export default class Select extends React.Component {
   };
 
   submit = () => {
+    this.setState({ isWaiting: !this.state.isWaiting });
     const { masks } = this.state;
 
     var result = [];
@@ -143,15 +148,24 @@ export default class Select extends React.Component {
 
     console.log(result);
 
-    fetch(`http://192.168.219.100/test.php?session=${this.state.sessionid}`, {
-      method: "POST", // or 'PUT'
-      body: JSON.stringify(result), // data can be `string` or {object}!
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
+    fetch(
+      `http://winners.dothome.co.kr/inpainting.php?session=${this.state.sessionid}`,
+      {
+        method: "POST", // or 'PUT'
+        body: JSON.stringify(result), // data can be `string` or {object}!
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => response.text())
-      .then((res) => console.log(res))
+      .then((res) => {
+        console.log(res),
+          this.setState({
+            submitDone: !this.state.submitDone,
+            isWaiting: !this.state.isWaiting,
+          });
+      })
       .catch((error) => console.error("Error:", error));
   };
 
@@ -160,6 +174,15 @@ export default class Select extends React.Component {
   };
 
   renderSelect = () => {
+    if (this.state.isWaiting) {
+      return (
+        <View style={{ flex: 1 }}>
+          <Loading />
+        </View>
+      );
+    } else if (this.state.submitDone) {
+      return <Result sessionid={this.state.sessionid} />;
+    }
     return (
       <View style={{ backgroundColor: "black" }}>
         <StatusBar barStyle="light-content" translucent={true} />
