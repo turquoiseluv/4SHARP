@@ -22,6 +22,7 @@ export default class Timer extends React.Component {
   componentWillUnmount() {
     clearTimeout(timer);
   }
+
   render() {
     //첫 로고 화면
     const { isLogo } = this.state;

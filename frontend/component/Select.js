@@ -30,7 +30,6 @@ export default class Select extends React.Component {
     imageX: 0,
     imageY: 0,
     goBack: false,
-    imgLoaded: false,
     maskLoaded: false,
     userMode: false,
     isWaiting: false,
@@ -46,7 +45,6 @@ export default class Select extends React.Component {
   };
 
   componentDidMount() {
-    this.imageDownloading();
     this.maskDownloading();
   }
 
@@ -77,24 +75,6 @@ export default class Select extends React.Component {
         mask.id == num ? { ...mask, selected: !mask.selected } : mask
       ),
     });
-  };
-
-  imageDownloading = () => {
-    fetch("http://zpunsss.dothome.co.kr/php/downtest2.php", {
-      method: "POST",
-    })
-      .then((response) => response.blob())
-      .then((blob) => {
-        var reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = () => {
-          var base64data = reader.result;
-          this.setState({
-            uri: base64data,
-            imgLoaded: true,
-          });
-        };
-      });
   };
 
   userMode = async () => {
@@ -283,8 +263,8 @@ export default class Select extends React.Component {
   };
 
   render() {
-    if (this.state.ratio === 0 && this.state.imgLoaded) {
-      Image.getSize(this.state.uri, (width, height) => {
+    if (this.state.ratio === 0) {
+      Image.getSize(this.props.uri, (width, height) => {
         this.setState({
           ratio: height / width,
           scale: width / screen.width,

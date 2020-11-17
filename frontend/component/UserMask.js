@@ -327,6 +327,7 @@ export default class UserMode extends Component {
   renderSelect = () => {
     return (
       <Select
+        uri={this.props.uri}
         masks={this.props.masks}
         maskLen={this.props.maskLen}
         sessionid={this.props.sessionid}
