@@ -11,6 +11,7 @@ import Constants from "expo-constants";
 import ExpoPixi from "expo-pixi";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Select from "./Select";
+import Loading from "./Loading";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -34,7 +35,6 @@ export default class UserMode extends Component {
     camRollPerm: false,
     rollGranted: false,
     cameraGranted: false,
-    uploading: false,
 
     image: this.props.uri,
     mask: null,
@@ -55,6 +55,9 @@ export default class UserMode extends Component {
       description: "",
       image: null,
     },
+
+    uploading: false,
+    inpaintDone: false,
   };
 
   componentDidMount() {
@@ -77,6 +80,35 @@ export default class UserMode extends Component {
       uri: uri,
     });
     // console.log(uri);
+  };
+
+  saveMask = async () => {
+    try {
+      this.setState({
+        uploading: true,
+      });
+
+      const manipResult = await ImageManipulator.manipulateAsync(
+        this.state.uri,
+        [
+          { resize: { width: windowWidth } },
+          {
+            crop: {
+              originX: 0,
+              originY: Math.round((windowHeight - this.state.sketchHeight) / 2),
+              width: windowWidth,
+              height: this.state.sketchHeight,
+            },
+          },
+        ],
+        { format: ImageManipulator.SaveFormat.PNG }
+      );
+      // console.log(manipResult);
+
+      await this.uploadImageAsync(manipResult.uri);
+    } catch (e) {
+      // console.log({ e });
+    }
   };
 
   uploadImageAsync = async (uri) => {
@@ -126,44 +158,14 @@ export default class UserMode extends Component {
       }
     )
       .then((response) => response.text())
-      .then((res) => console.log(res))
+      .then((res) => {
+        console.log(res);
+        this.setState({
+          uploading: false,
+          inpaintDone: true,
+        });
+      })
       .catch((error) => console.error("Error:", error));
-  };
-
-  saveMask = async () => {
-    let uploadResponse, uploadResult;
-
-    try {
-      this.setState({
-        uploading: true,
-      });
-
-      const manipResult = await ImageManipulator.manipulateAsync(
-        this.state.uri,
-        [
-          { resize: { width: windowWidth } },
-          {
-            crop: {
-              originX: 0,
-              originY: Math.round((windowHeight - this.state.sketchHeight) / 2),
-              width: windowWidth,
-              height: this.state.sketchHeight,
-            },
-          },
-        ],
-        { format: ImageManipulator.SaveFormat.PNG }
-      );
-      // console.log(manipResult);
-
-      await this.uploadImageAsync(manipResult.uri);
-    } catch (e) {
-      // console.log({ e });
-    } finally {
-      this.setState({
-        uploading: false,
-        goBack: true,
-      });
-    }
   };
 
   pressedBack = () => {
@@ -355,6 +357,15 @@ export default class UserMode extends Component {
   };
 
   render() {
+    if (this.state.uploading) {
+      return (
+        <View style={{ flex: 1 }}>
+          <Loading />
+        </View>
+      );
+    } else if (this.state.inpaintDone) {
+      return <Result sessionid={this.props.sessionid} />;
+    }
     if (this.state.goBack) {
       return this.renderSelect();
     } else {

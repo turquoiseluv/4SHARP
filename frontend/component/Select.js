@@ -155,6 +155,7 @@ export default class Select extends React.Component {
 
   renderSelect = () => {
     if (this.state.isWaiting) {
+      // render() 앞으로 뺼 수 있으면 빼보자(UserMask 구조와 통일)
       return (
         <View style={{ flex: 1 }}>
           <Loading />
