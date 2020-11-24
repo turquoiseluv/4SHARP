@@ -30,6 +30,7 @@ import isIPhoneX from "react-native-is-iphonex";
 // 이미지 선택 후 이미지뷰어 화면
 import Select from "./Select";
 import Loading from "./Loading";
+import Choice from "./Choice";
 
 const screen = Dimensions.get("window");
 
@@ -72,8 +73,8 @@ export default class Home extends React.Component {
     camRollPerm: false,
     hasPermission: false, //권한
     cameraType: Camera.Constants.Type.back, //전면 카메라, 후면카메라 현재값은 후면카메라
-    selected: false, //사진 data값이 생기면 다음화면으로 넘어가기 위해 설정한 state
-    data: null, //사진의 uri 값을 넣기 위한 state
+    selected: false, //사진 데이터 값이 생기면 다음화면으로 넘어가기 위해 설정한 state
+    uri: this.props.uri, //사진의 uri 값을 넣기 위한 state
     maskLen: null,
 
     // 부가 옵션들
@@ -88,7 +89,8 @@ export default class Home extends React.Component {
     //프레임 보기/숨기기
     galleryMode: false,
     showFrame: true,
-    showSelect: false,
+    showSelect: this.props.showSelect,
+    showChoice: false,
 
     baseScale: 1,
     pinchScale: 1,
@@ -155,8 +157,8 @@ export default class Home extends React.Component {
     await MediaLibrary.createAssetAsync(uri); //촬영후 앨범에 접근하여 저장하는 메소드
     this.setState({
       newPhotos: true,
-      data: uri,
-    }); //uri를 data에 넣어주고 다음화면으로 넘어갈 수 있게 next true로 바꿈
+      uri: uri,
+    }); //uri를 데이터를 넣어주고 다음화면으로 넘어갈 수 있게 next true로 바꿈
   };
 
   pickImage = async () => {
@@ -165,12 +167,14 @@ export default class Home extends React.Component {
     const { uri } = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
-    this.setState({
-      galleryMode: false,
-      newPhotos: false,
-      showSelect: true,
-      data: uri,
-    });
+    if (uri) {
+      this.setState({
+        galleryMode: false,
+        newPhotos: false,
+        showChoice: true,
+        uri: uri,
+      });
+    }
   };
 
   renderTopBar = () => (
@@ -329,7 +333,7 @@ export default class Home extends React.Component {
 
     const form = new FormData();
 
-    let uri = this.state.data;
+    let uri = this.state.uri;
 
     form.append("test", {
       uri: uri,
@@ -351,22 +355,17 @@ export default class Home extends React.Component {
           maskLen: responseJson.slice(1, -1),
         });
         //console.log(this.state.maskLen);
-        // 성공시 카메라로 or 알림 닫기
-        Alert.alert(
-          "Upload Successful",
-          "성공적으로 업로드 되었습니다.",
-          [
-            { text: "카메라", onPress: this.pressedBack },
-            { text: "닫기", onPress: () => console.log("닫기 누름") },
-          ],
-          { cancelable: false }
-        );
+        // 성공시 알림
+        console.log("업로드 성공");
       })
       .catch((error) => {
         console.log(error);
-        Alert.alert("Upload Failed", "업로드가 실패했습니다.");
         // 실패시 알림 확인만
       });
+  };
+
+  renderChoice = () => {
+    return <Choice uri={this.state.uri} sessionid={this.state.sessionid} />;
   };
 
   renderSelect = () => {
@@ -385,22 +384,25 @@ export default class Home extends React.Component {
     return (
       <Select
         sessionid={this.state.sessionid}
-        uri={this.state.data}
+        uri={this.state.uri}
         maskLen={this.state.maskLen}
       />
     );
   };
 
   render() {
-    const cameraScreenContent =
-      this.state.camPerm && this.state.camRollPerm
-        ? this.renderCamera()
-        : this.renderNoPermission();
-    const content =
-      this.state.showSelect && this.state.data
-        ? this.renderSelect()
-        : cameraScreenContent;
-    return content;
+    console.log(this.state.showSelect, this.state.uri);
+    if (this.state.showSelect && this.state.uri) {
+      return this.renderSelect();
+    } else if (this.state.showChoice) {
+      return this.renderChoice();
+    } else if (this.state.camPerm && this.state.camRollPerm) {
+      return this.renderCamera();
+    } else if (!this.state.camPerm || !this.state.camRollPerm) {
+      return this.renderNoPermission();
+    } else {
+      return null;
+    }
   }
 }
 

@@ -1,6 +1,7 @@
 import * as React from "react";
 import LogoScreen from "./component/LogoScreen";
 import Home from "./component/Home";
+import Choice from "./component/Choice";
 
 import { YellowBox } from "react-native";
 YellowBox.ignoreWarnings(["Require cycle:"]);
@@ -16,7 +17,7 @@ export default class Timer extends React.Component {
       this.setState({
         isLogo: false,
       });
-    }, 1000);
+    }, 4000);
   }
 
   componentWillUnmount() {
