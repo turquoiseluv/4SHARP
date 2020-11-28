@@ -1,30 +1,26 @@
 {
   "expo": {
-    "name": "react native camera expo example",
-    "slug": "react-native-camera-expo-example",
-    "privacy": "public",
-    "description": "In this Project we're going to explore the React Native Camera Expo in multiple ways, and I have written a depth guide with examples in my Blog reactntativemaster.com, for future references. You can check the full Article here. https://reactnativemaster.com/react-native-camera-expo-example",
+    "name": "4SHARP",
+    "slug": "4SHARP",
+    "description": "DKU-SW 4# Team Project - Inpainting Mobile Application. You can check out Github for this project here. https://github.com/turquoiseluv/4SHARP",
     "platforms": [
       "ios",
-      "android",
-      "web"
+      "android"
     ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#222222"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.dkusw.foursharp"
+    },
+    "android": {
+      "package": "com.dkusw.foursharp"
     }
   }
 }

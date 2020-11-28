@@ -26,8 +26,6 @@ YellowBox.ignoreWarnings([
 ]);
 
 const screen = Dimensions.get("window");
-const windowWidth = Dimensions.get("window").width;
-const windowHeight = Dimensions.get("window").height;
 
 export default class UserMode extends Component {
   state = {
@@ -45,7 +43,7 @@ export default class UserMode extends Component {
 
     imgLoaded: false,
     scale: 0,
-    sketchHeight: windowHeight,
+    sketchHeight: screen.height,
 
     goBack: false,
 
@@ -92,12 +90,12 @@ export default class UserMode extends Component {
       const manipResult = await ImageManipulator.manipulateAsync(
         uri,
         [
-          { resize: { width: windowWidth } },
+          { resize: { width: screen.width } },
           {
             crop: {
               originX: 0,
-              originY: Math.round((windowHeight - sketchHeight) / 2),
-              width: windowWidth,
+              originY: Math.round((screen.height - sketchHeight) / 2),
+              width: screen.width,
               height: sketchHeight,
             },
           },
@@ -193,7 +191,7 @@ export default class UserMode extends Component {
       this.setState({
         imgLoaded: true,
         scale: height / width,
-        sketchHeight: Math.round(windowWidth * (height / width)),
+        sketchHeight: Math.round(screen.width * (height / width)),
       });
     });
   };
@@ -222,8 +220,8 @@ export default class UserMode extends Component {
         style={{
           flex: 1,
           position: "absolute",
-          height: windowHeight,
-          width: windowWidth,
+          height: screen.height,
+          width: screen.width,
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -237,8 +235,8 @@ export default class UserMode extends Component {
           style={{
             flex: 1,
             position: "absolute",
-            height: windowHeight,
-            width: windowWidth,
+            height: screen.height,
+            width: screen.width,
           }}
           onChange={this.onChangeAsync}
           onReady={this.onReady}
@@ -298,8 +296,8 @@ export default class UserMode extends Component {
             style={{
               flex: 1,
               position: "absolute",
-              height: windowHeight,
-              width: windowWidth,
+              height: screen.height,
+              width: screen.width,
               justifyContent: "center",
               alignItems: "center",
             }}
@@ -428,7 +426,7 @@ const styles = StyleSheet.create({
   },
   widthSlider: {
     marginHorizontal: 10,
-    width: windowWidth * 0.8,
+    width: screen.width * 0.8,
     position: "absolute",
     alignSelf: "center",
     top: 50,

@@ -7,7 +7,6 @@ import {
   Animated,
   Dimensions,
   StatusBar,
-  Alert,
 } from "react-native";
 import { Camera } from "expo-camera";
 import * as Permissions from "expo-permissions";
@@ -27,8 +26,6 @@ import * as ScreenOrientation from "expo-screen-orientation";
 
 // StatusBar 등의 가변 객체 정보
 import Constants from "expo-constants";
-// 아이폰X(노치 디자인) 여부 확인
-import isIPhoneX from "react-native-is-iphonex";
 // 이미지 선택 후 이미지뷰어 화면
 import Select from "./Select";
 import Loading from "./Loading";
@@ -438,7 +435,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   topFrameBlack: {
-    flex: 0.15,
+    flex: 0.2,
     backgroundColor: "black",
   },
   topFrameTrans: {
@@ -446,7 +443,7 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   bottomFrameBlack: {
-    flex: 0.2,
+    flex: 0.3,
     backgroundColor: "black",
   },
   bottomFrameTrans: {
@@ -464,7 +461,7 @@ const styles = StyleSheet.create({
   scaleText: {
     alignSelf: "flex-end",
     textAlign: "center",
-    bottom: 20,
+    bottom: 25,
     width: 50,
     flex: 1,
     padding: 10,
@@ -498,7 +495,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   toggleButton: {
     flex: 0.25,
     height: 40,
@@ -513,7 +509,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-
   newPhotosDot: {
     position: "absolute",
     top: 0,

@@ -69,7 +69,7 @@ class LogoScreen extends Component {
         <Animated.View style={{ opacity: LogoText }}>
           <Text style={styles.logoText}>4# SH4RP</Text>
           <Text style={styles.subText}>
-            Impainting & Cropping {"\n"}Team Project
+            Detection & Inpainting {"\n"}Team Project
           </Text>
           {loadingSpinner ? (
             <View>
