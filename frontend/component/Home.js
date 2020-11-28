@@ -23,6 +23,8 @@ import * as MediaLibrary from "expo-media-library";
 import { PinchGestureHandler, State } from "react-native-gesture-handler";
 import { AppLoading } from "expo";
 
+import * as ScreenOrientation from "expo-screen-orientation";
+
 // StatusBar 등의 가변 객체 정보
 import Constants from "expo-constants";
 // 아이폰X(노치 디자인) 여부 확인
@@ -133,18 +135,16 @@ export default class Home extends React.Component {
     this.setState({ autoFocus: this.state.autoFocus === "on" ? "off" : "on" });
 
   zoomIn = (scale) => {
+    const { zoom } = this.state;
     this.setState({
-      zoom:
-        this.state.zoom + scale * 0.5 > 4 / 9
-          ? 4 / 9 // 2.0~10.0x 배율 중 2.0~5.0x 배율로 제한 (5배율 이상은 실용 X)
-          : this.state.zoom + scale * 0.25,
+      zoom: zoom + scale * 0.5 > 4 / 9 ? 4 / 9 : zoom + scale * 0.25,
     });
   };
 
   zoomOut = (scale) => {
+    const { zoom } = this.state;
     this.setState({
-      zoom:
-        this.state.zoom + scale * 0.5 < 0 ? 0 : this.state.zoom + scale * 0.25,
+      zoom: zoom + scale * 0.5 < 0 ? 0 : zoom + scale * 0.25,
     });
   };
 
@@ -177,142 +177,157 @@ export default class Home extends React.Component {
     }
   };
 
-  renderTopBar = () => (
-    <View style={styles.topBar}>
-      <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFrame}>
-        <MaterialCommunityIcons
-          name={
-            this.state.showFrame
-              ? "arrow-expand-vertical"
-              : "arrow-collapse-vertical"
-          }
-          size={32}
-          color="white"
-        />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFlash}>
-        <MaterialIcons
-          name={flashIcons[this.state.flash]}
-          size={32}
-          color="white"
-        />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.toggleButton} onPress={this.toggleWB}>
-        <MaterialIcons
-          name={wbIcons[this.state.whiteBalance]}
-          size={32}
-          color="white"
-        />
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.toggleButton} onPress={this.toggleFocus}>
-        <Text
-          style={[
-            styles.autoFocusLabel,
-            { color: this.state.autoFocus === "on" ? "white" : "#6b6b6b" },
-          ]}
-        >
-          AF
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  renderBottomBar = () => (
-    <View style={styles.bottomB}>
-      <View>
-        <Text style={styles.scaleText}>
-          {(Math.round((1 + this.state.zoom * 9) * 10) / 10).toFixed(1)}x
-        </Text>
-      </View>
-      <View style={styles.bottomBar}>
+  renderTopBar = () => {
+    const { showFrame, flash, whiteBalance, autoFocus } = this.state;
+    return (
+      <View style={styles.topBar}>
         <TouchableOpacity
-          style={styles.bottomSideButton}
-          onPress={this.toggleFacing}
+          style={styles.toggleButton}
+          onPress={this.toggleFrame}
         >
-          <Entypo name="cycle" size={26} color="white" />
+          <MaterialCommunityIcons
+            name={
+              showFrame ? "arrow-expand-vertical" : "arrow-collapse-vertical"
+            }
+            size={32}
+            color="white"
+          />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.bottomButton}
-          onPress={this.takePicture}
+          style={styles.toggleButton}
+          onPress={this.toggleFlash}
         >
-          <Ionicons name="ios-radio-button-on" size={75} color="white" />
+          <MaterialIcons name={flashIcons[flash]} size={32} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.toggleButton} onPress={this.toggleWB}>
+          <MaterialIcons name={wbIcons[whiteBalance]} size={32} color="white" />
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.bottomSideButton}
-          onPress={this.pickImage}
+          style={styles.toggleButton}
+          onPress={this.toggleFocus}
         >
-          <View>
-            <Foundation name="thumbnails" size={30} color="white" />
-            {this.state.newPhotos && <View style={styles.newPhotosDot} />}
-          </View>
+          <Text
+            style={[
+              styles.autoFocusLabel,
+              { color: autoFocus === "on" ? "white" : "#6b6b6b" },
+            ]}
+          >
+            AF
+          </Text>
         </TouchableOpacity>
       </View>
-    </View>
-  );
-
-  onPinchEvent = Animated.event(
-    [{ nativeEvent: { scale: this.state.pinchScale } }],
-    {
-      useNativeDriver: true,
-      listener: (event) => {
-        this.state.baseScale = event.nativeEvent.scale - this.state.lastScale;
-        this.state.lastScale = event.nativeEvent.scale;
-        if (event.nativeEvent.scale > 1) {
-          this.zoomIn(this.state.baseScale);
-        } else {
-          this.zoomOut(this.state.baseScale);
-        }
-        // this.setState({ zoom: Math.floor(e.nativeEvent.translationX) });
-      },
-    }
-  );
-  onPinchHandlerStateChange = (event) => {
-    if (event.nativeEvent.oldState === State.ACTIVE) {
-      this.state.lastScale = 1;
-    }
+    );
   };
 
-  renderCamera = () => (
-    <View style={{ flex: 1 }}>
-      <StatusBar
-        barStyle={this.state.galleryMode ? "dark-content" : "light-content"}
-        translucent={true}
-      />
-      <View
-        style={[
-          this.state.showFrame ? styles.topFrameBlack : styles.topFrameTrans,
-        ]}
-      ></View>
-      <PinchGestureHandler
-        onGestureEvent={this.onPinchEvent}
-        onHandlerStateChange={this.onPinchHandlerStateChange}
-      >
-        <Animated.View style={{ flex: 1 }}>
-          <Camera
-            ref={(ref) => {
-              this.camera = ref;
-            }}
-            style={styles.camera}
-            type={this.state.type}
-            flashMode={this.state.flash}
-            autoFocus={this.state.autoFocus}
-            zoom={this.state.zoom}
-            whiteBalance={this.state.whiteBalance}
-            onMountError={this.handleMountError}
-          ></Camera>
-        </Animated.View>
-      </PinchGestureHandler>
-      <View
-        style={[
-          this.state.showFrame
-            ? styles.bottomFrameBlack
-            : styles.bottomFrameTrans,
-        ]}
-      ></View>
-      {this.renderTopBar()}
-      {this.renderBottomBar()}
-    </View>
-  );
+  renderBottomBar = () => {
+    const { zoom, newPhotos } = this.state;
+    return (
+      <View style={styles.bottomB}>
+        <View>
+          <Text style={styles.scaleText}>
+            {(Math.round((1 + zoom * 9) * 10) / 10).toFixed(1)}x
+          </Text>
+        </View>
+        <View style={styles.bottomBar}>
+          <TouchableOpacity
+            style={styles.bottomSideButton}
+            onPress={this.toggleFacing}
+          >
+            <Entypo name="cycle" size={26} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomButton}
+            onPress={this.takePicture}
+          >
+            <Ionicons name="ios-radio-button-on" size={75} color="white" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomSideButton}
+            onPress={this.pickImage}
+          >
+            <View>
+              <Foundation name="thumbnails" size={30} color="white" />
+              {newPhotos && <View style={styles.newPhotosDot} />}
+            </View>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  renderCamera = () => {
+    const {
+      galleryMode,
+      showFrame,
+      type,
+      flash,
+      autoFocus,
+      zoom,
+      whiteBalance,
+    } = this.state;
+
+    let { pinchScale, baseScale, lastScale } = this.state;
+
+    const onPinchEvent = Animated.event(
+      [{ nativeEvent: { scale: pinchScale } }],
+      {
+        useNativeDriver: true,
+        listener: (event) => {
+          baseScale = event.nativeEvent.scale - lastScale;
+          lastScale = event.nativeEvent.scale;
+          if (event.nativeEvent.scale > 1) {
+            this.zoomIn(baseScale);
+          } else {
+            this.zoomOut(baseScale);
+          }
+        },
+      }
+    );
+
+    const onPinchHandlerStateChange = (event) => {
+      if (event.nativeEvent.oldState === State.ACTIVE) {
+        lastScale = 1;
+      }
+    };
+
+    return (
+      <View style={{ flex: 1 }}>
+        <StatusBar
+          barStyle={galleryMode ? "dark-content" : "light-content"}
+          translucent={true}
+        />
+        <View
+          style={[showFrame ? styles.topFrameBlack : styles.topFrameTrans]}
+        ></View>
+        <PinchGestureHandler
+          onGestureEvent={onPinchEvent}
+          onHandlerStateChange={onPinchHandlerStateChange}
+        >
+          <Animated.View style={{ flex: 1 }}>
+            <Camera
+              ref={(ref) => {
+                this.camera = ref;
+              }}
+              style={styles.camera}
+              type={type}
+              flashMode={flash}
+              autoFocus={autoFocus}
+              zoom={zoom}
+              whiteBalance={whiteBalance}
+              onMountError={this.handleMountError}
+            ></Camera>
+          </Animated.View>
+        </PinchGestureHandler>
+        <View
+          style={[
+            showFrame ? styles.bottomFrameBlack : styles.bottomFrameTrans,
+          ]}
+        ></View>
+        {this.renderTopBar()}
+        {this.renderBottomBar()}
+      </View>
+    );
+  };
 
   renderNoPermission = () => {
     //권한이 거절일때 나오는 부분
@@ -328,17 +343,13 @@ export default class Home extends React.Component {
   };
 
   imageUploading = () => {
-    const id = this.state.sessionid;
-    console.log(this.state.sessionid);
+    const { sessionid, uri } = this.state;
 
     const form = new FormData();
-
-    let uri = this.state.uri;
-
     form.append("test", {
       uri: uri,
       type: "image",
-      name: id, //파일이름 변경할 시 변경
+      name: sessionid, //파일이름 변경할 시 변경
     });
     fetch("http://winners.dothome.co.kr/image_upload.php", {
       method: "POST",
@@ -350,55 +361,55 @@ export default class Home extends React.Component {
     })
       .then((response) => response.text()) //response중 쓸대없는 값 제거후 php에서 보내준 echo값만 뽑아옴.
       .then((responseJson) => {
-        console.log(responseJson);
+        // 성공
         this.setState({
           maskLen: responseJson.slice(1, -1),
         });
-        //console.log(this.state.maskLen);
-        // 성공시 알림
-        console.log("업로드 성공");
       })
       .catch((error) => {
+        // 실패시 로그
         console.log(error);
-        // 실패시 알림 확인만
       });
   };
 
   renderChoice = () => {
-    return <Choice uri={this.state.uri} sessionid={this.state.sessionid} />;
+    const { uri, sessionid } = this.state;
+    return <Choice uri={uri} sessionid={sessionid} />;
   };
 
   renderSelect = () => {
-    if (!this.state.maskLen) {
+    const { maskLen, sessionid, uri } = this.state;
+    if (!maskLen) {
       return (
         <View style={{ flex: 1 }}>
           <AppLoading
             startAsync={this.imageUploading}
-            onFinish={() => this.setState({ maskLen: this.state.maskLen })}
+            onFinish={() => this.setState({ maskLen: maskLen })}
             onError={console.warn}
           />
           <Loading />
         </View>
       );
     }
-    return (
-      <Select
-        sessionid={this.state.sessionid}
-        uri={this.state.uri}
-        maskLen={this.state.maskLen}
-      />
+    return <Select sessionid={sessionid} uri={uri} maskLen={maskLen} />;
+  };
+
+  changeScreenOrientation = async () => {
+    await ScreenOrientation.lockAsync(
+      ScreenOrientation.OrientationLock.PORTRAIT_UP
     );
   };
 
   render() {
-    console.log(this.state.showSelect, this.state.uri);
-    if (this.state.showSelect && this.state.uri) {
+    this.changeScreenOrientation();
+    const { showSelect, uri, showChoice, camPerm, camRollPerm } = this.state;
+    if (showSelect && uri) {
       return this.renderSelect();
-    } else if (this.state.showChoice) {
+    } else if (showChoice) {
       return this.renderChoice();
-    } else if (this.state.camPerm && this.state.camRollPerm) {
+    } else if (camPerm && camRollPerm) {
       return this.renderCamera();
-    } else if (!this.state.camPerm || !this.state.camRollPerm) {
+    } else if (!camPerm || !camRollPerm) {
       return this.renderNoPermission();
     } else {
       return null;
@@ -453,7 +464,7 @@ const styles = StyleSheet.create({
   scaleText: {
     alignSelf: "flex-end",
     textAlign: "center",
-    bottom: 30,
+    bottom: 20,
     width: 50,
     flex: 1,
     padding: 10,
@@ -466,7 +477,7 @@ const styles = StyleSheet.create({
   bottomB: {
     position: "absolute",
     width: screen.width,
-    bottom: isIPhoneX ? 75 : 35,
+    bottom: 35,
   },
   bottomBar: {
     // backgroundColor: "green",

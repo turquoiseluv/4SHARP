@@ -44,12 +44,13 @@ class LogoScreen extends Component {
     });
   }
   render() {
+    const { PersonAnime, FrameAnime, LogoText, loadingSpinner } = this.state;
     return (
       <View style={styles.container}>
         <View>
           <Animated.View
             style={{
-              top: this.state.PersonAnime.interpolate({
+              top: PersonAnime.interpolate({
                 inputRange: [0, 1],
                 outputRange: [80, 0],
               }),
@@ -60,17 +61,17 @@ class LogoScreen extends Component {
           >
             <Image source={Logo_Person} />
           </Animated.View>
-          <Animated.View style={{ opacity: this.state.FrameAnime }}>
+          <Animated.View style={{ opacity: FrameAnime }}>
             <Image source={Logo_Frame} />
           </Animated.View>
         </View>
 
-        <Animated.View style={{ opacity: this.state.LogoText }}>
+        <Animated.View style={{ opacity: LogoText }}>
           <Text style={styles.logoText}>4# SH4RP</Text>
           <Text style={styles.subText}>
             Impainting & Cropping {"\n"}Team Project
           </Text>
-          {this.state.loadingSpinner ? (
+          {loadingSpinner ? (
             <View>
               <ActivityIndicator
                 style={{

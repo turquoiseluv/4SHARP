@@ -49,16 +49,16 @@ export default class Select extends React.Component {
   }
 
   maskDownloading = async () => {
+    const { masks, maskLen, sessionid } = this.state;
     if (this.props.masks) {
       this.setState({ masks: this.props.masks, maskLoaded: true });
     } else {
-      for (let id = 1; id < this.state.maskLen; id++) {
+      for (let id = 1; id < maskLen; id++) {
         let masknumber = id;
-        const { masks } = this.state;
         await this.setState({
           masks: masks.concat({
             id: id,
-            uri: `http://winners.dothome.co.kr/${this.state.sessionid}/${masknumber}.png`,
+            uri: `http://winners.dothome.co.kr/${sessionid}/${masknumber}.png`,
             selected: false,
             key: id,
           }),
@@ -85,7 +85,7 @@ export default class Select extends React.Component {
 
   // 좌우비율이 같을때, 상하비율로 그림인지 판단
   onPicPress = (px) => {
-    const { scale } = this.state;
+    const { scale, imageX, imageY, maskLen, sessionid } = this.state;
     if (px.pageX != px.locationX || px.pageY != px.locationY) {
       this.setState({
         axisX: px.locationX,
@@ -93,11 +93,11 @@ export default class Select extends React.Component {
         axisY: px.locationY,
         imageY: px.locationY * scale,
       });
-      let x = Math.round(this.state.imageX);
-      let y = Math.round(this.state.imageY);
-      console.log(x, y, this.state.maskLen, this.state.sessionid);
+      let x = Math.round(imageX);
+      let y = Math.round(imageY);
+      console.log(x, y, maskLen, sessionid);
       fetch(
-        `http://winners.dothome.co.kr/checking_mask_number.php?maskLen=${this.state.maskLen}&x=${x}&y=${y}&session=${this.state.sessionid}`
+        `http://winners.dothome.co.kr/checking_mask_number.php?maskLen=${maskLen}&x=${x}&y=${y}&session=${sessionid}`
       )
         .then((response) => response.text())
         .then((responseText) => {
@@ -115,8 +115,8 @@ export default class Select extends React.Component {
   };
 
   submit = () => {
-    this.setState({ isWaiting: !this.state.isWaiting });
-    const { masks } = this.state;
+    const { masks, isWaiting, sessionid, submitDone } = this.state;
+    this.setState({ isWaiting: !isWaiting });
 
     var result = [];
 
@@ -126,24 +126,19 @@ export default class Select extends React.Component {
       }
     });
 
-    console.log(result);
-
-    fetch(
-      `http://winners.dothome.co.kr/inpainting.php?session=${this.state.sessionid}`,
-      {
-        method: "POST", // or 'PUT'
-        body: JSON.stringify(result), // data can be `string` or {object}!
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    )
+    fetch(`http://winners.dothome.co.kr/inpainting.php?session=${sessionid}`, {
+      method: "POST", // or 'PUT'
+      body: JSON.stringify(result), // data can be `string` or {object}!
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => response.text())
       .then((res) => {
         console.log(res),
           this.setState({
-            submitDone: !this.state.submitDone,
-            isWaiting: !this.state.isWaiting,
+            submitDone: !submitDone,
+            isWaiting: !isWaiting,
           });
       })
       .catch((error) => console.error("Error:", error));
@@ -154,16 +149,7 @@ export default class Select extends React.Component {
   };
 
   renderSelect = () => {
-    if (this.state.isWaiting) {
-      // render() 앞으로 뺼 수 있으면 빼보자(UserMask 구조와 통일)
-      return (
-        <View style={{ flex: 1 }}>
-          <Loading />
-        </View>
-      );
-    } else if (this.state.submitDone) {
-      return <Result sessionid={this.state.sessionid} />;
-    }
+    const { ratio, uri } = this.state;
     return (
       <View style={{ backgroundColor: "black" }}>
         <StatusBar barStyle="light-content" translucent={true} />
@@ -171,7 +157,7 @@ export default class Select extends React.Component {
           cropWidth={screen.width}
           cropHeight={screen.height}
           imageWidth={screen.width}
-          imageHeight={screen.width * this.state.ratio}
+          imageHeight={screen.width * ratio}
           onClick={(px) => {
             this.onPicPress(px);
           }}
@@ -180,28 +166,12 @@ export default class Select extends React.Component {
           <Image
             style={{
               width: screen.width,
-              height: screen.width * this.state.ratio,
+              height: screen.width * ratio,
             }}
-            source={{ uri: this.state.uri }}
+            source={{ uri: uri }}
           />
           {this.renderMask()}
         </ImageZoom>
-        <View style={styles.textBox}>
-          <Text style={styles.text}>
-            {"화면 좌표: [ " +
-              Math.round(this.state.axisX) +
-              " , " +
-              Math.round(this.state.axisY) +
-              " ]"}
-          </Text>
-          <Text style={styles.text}>
-            {"이미지 좌표: [ " +
-              Math.round(this.state.imageX) +
-              " , " +
-              Math.round(this.state.imageY) +
-              " ]"}
-          </Text>
-        </View>
         {this.renderBottomBar()}
       </View>
     );
@@ -233,14 +203,14 @@ export default class Select extends React.Component {
   };
 
   renderMask = () => {
-    const { masks } = this.state;
+    const { masks, ratio } = this.state;
     //masks가 불려오기 전에 호출하지 않게...
     const list = masks.map((info) => (
       <Image
         source={{ uri: info.uri }}
         style={{
           width: screen.width,
-          height: screen.width * this.state.ratio,
+          height: screen.width * ratio,
           position: "absolute",
           tintColor: masks[info.id].selected ? "#e4488877" : "#28aaaa77",
         }}
@@ -252,19 +222,40 @@ export default class Select extends React.Component {
   };
 
   renderUser = () => {
+    const { uri, masks, ratio, maskLen, sessionid } = this.state;
+
     return (
       <UserMask
-        uri={this.state.uri}
-        masks={this.state.masks}
-        ratio={this.state.ratio}
-        maskLen={this.state.maskLen}
-        sessionid={this.state.sessionid}
+        uri={uri}
+        masks={masks}
+        ratio={ratio}
+        maskLen={maskLen}
+        sessionid={sessionid}
       />
     );
   };
 
   render() {
-    if (this.state.ratio === 0) {
+    const {
+      isWaiting,
+      submitDone,
+      sessionid,
+      ratio,
+      goBack,
+      userMode,
+      maskLoaded,
+    } = this.state;
+    if (isWaiting) {
+      // render() 앞으로 뺼 수 있으면 빼보자(UserMask 구조와 통일)
+      return (
+        <View style={{ flex: 1 }}>
+          <Loading />
+        </View>
+      );
+    } else if (submitDone) {
+      return <Result sessionid={sessionid} />;
+    }
+    if (ratio === 0) {
       Image.getSize(this.props.uri, (width, height) => {
         this.setState({
           ratio: height / width,
@@ -272,11 +263,11 @@ export default class Select extends React.Component {
         });
       });
     }
-    if (this.state.goBack) {
+    if (goBack) {
       return this.renderHome();
-    } else if (this.state.userMode) {
+    } else if (userMode) {
       return this.renderUser();
-    } else if (this.state.maskLoaded) {
+    } else if (maskLoaded) {
       return this.renderSelect();
     } else {
       return null;

@@ -19,8 +19,8 @@ export default class Loading extends React.Component {
   }
 
   getList = async () => {
+    const { colorList, test } = this.state;
     for (let id = 0; id < 6; id++) {
-      const { colorList } = this.state;
       let temp = Math.random() < 0.5;
       await this.setState({
         colorList: colorList.concat({
@@ -28,7 +28,7 @@ export default class Loading extends React.Component {
           chosen: temp,
           key: id,
         }),
-        test: this.state.test.concat(temp),
+        test: test.concat(temp),
       });
     }
   };
@@ -53,9 +53,9 @@ export default class Loading extends React.Component {
   };
 
   changeColor = (num) => {
-    const { colorList } = this.state;
-    let newTest = this.state.test.slice();
-    newTest[num] = !this.state.test[num];
+    const { colorList, test } = this.state;
+    let newTest = test.slice();
+    newTest[num] = !test[num];
     this.setState({
       colorList: colorList.map((color) =>
         color.id == num ? { ...color, chosen: !color.chosen } : color
@@ -65,8 +65,9 @@ export default class Loading extends React.Component {
   };
 
   allReward = () => {
-    if (this.state.test.length == this.state.listLen) {
-      if (this.state.test.every((val) => val)) {
+    const { test, listLen } = this.state;
+    if (test.length == listLen) {
+      if (test.every((val) => val)) {
         return (
           <MaterialCommunityIcons
             name="crown"
@@ -82,7 +83,7 @@ export default class Loading extends React.Component {
           />
         );
       }
-      if (this.state.test.every((val) => !val)) {
+      if (test.every((val) => !val)) {
         return (
           <MaterialCommunityIcons
             name="crown"

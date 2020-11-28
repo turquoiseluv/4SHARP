@@ -22,6 +22,7 @@
     "expo-media-library": "~8.2.1",
     "expo-permissions": "~9.0.1",
     "expo-pixi": "^1.2.0",
+    "expo-screen-orientation": "~1.1.1",
     "react": "16.11.0",
     "react-dom": "16.11.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",

@@ -40,7 +40,7 @@ export default class UserMode extends Component {
     mask: null,
     color: 0xe44888,
     alpha: 1,
-    width: 50,
+    sliderWidth: 50,
     uri: null,
 
     imgLoaded: false,
@@ -83,21 +83,22 @@ export default class UserMode extends Component {
   };
 
   saveMask = async () => {
+    const { uri, sketchHeight } = this.state;
     try {
       this.setState({
         uploading: true,
       });
 
       const manipResult = await ImageManipulator.manipulateAsync(
-        this.state.uri,
+        uri,
         [
           { resize: { width: windowWidth } },
           {
             crop: {
               originX: 0,
-              originY: Math.round((windowHeight - this.state.sketchHeight) / 2),
+              originY: Math.round((windowHeight - sketchHeight) / 2),
               width: windowWidth,
-              height: this.state.sketchHeight,
+              height: sketchHeight,
             },
           },
         ],
@@ -215,6 +216,7 @@ export default class UserMode extends Component {
   };
 
   renderSketch = () => {
+    const { color, width, alpha } = this.state;
     return (
       <View
         style={{
@@ -229,9 +231,9 @@ export default class UserMode extends Component {
         <ExpoPixi.Sketch
           resizeMode="contain"
           ref={(ref) => (this.sketch = ref)}
-          strokeColor={this.state.color}
-          strokeWidth={this.state.width}
-          strokeAlpha={this.state.alpha}
+          strokeColor={color}
+          strokeWidth={width}
+          strokeAlpha={alpha}
           style={{
             flex: 1,
             position: "absolute",
@@ -287,7 +289,8 @@ export default class UserMode extends Component {
   };
 
   renderUser() {
-    if (this.state.imgLoaded == true) {
+    const { imgLoaded, image, sliderWidth } = this.state;
+    if (imgLoaded == true) {
       return (
         <View style={styles.container}>
           <Image
@@ -301,7 +304,7 @@ export default class UserMode extends Component {
               alignItems: "center",
             }}
             source={{
-              uri: this.state.image,
+              uri: image,
             }}
           />
           {this.renderMask()}
@@ -312,10 +315,10 @@ export default class UserMode extends Component {
           <Slider
             style={styles.widthSlider}
             step={5}
-            value={this.state.width}
+            value={sliderWidth}
             minimumValue={20}
             maximumValue={80}
-            onSlidingComplete={(val) => this.setState({ width: val })}
+            onSlidingComplete={(val) => this.setState({ sliderWidth: val })}
             minimumTrackTintColor="#ffffffff"
             maximumTrackTintColor="#ffffff25"
           />
@@ -357,16 +360,17 @@ export default class UserMode extends Component {
   };
 
   render() {
-    if (this.state.uploading) {
+    const { uploading, inpaintDone, goBack } = this.state;
+    if (uploading) {
       return (
         <View style={{ flex: 1 }}>
           <Loading />
         </View>
       );
-    } else if (this.state.inpaintDone) {
+    } else if (inpaintDone) {
       return <Result sessionid={this.props.sessionid} />;
     }
-    if (this.state.goBack) {
+    if (goBack) {
       return this.renderSelect();
     } else {
       return this.renderUser();
