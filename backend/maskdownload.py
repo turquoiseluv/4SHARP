@@ -22,7 +22,9 @@ def MaskDownload(name, maskCnt):
         localfile.close()
         image = cv.imread(os.path.join(CUR_DIR, '0.png'))
         image = cv.resize(image, (shape[1], shape[0]))
-        cv.imwrite(os.path.join(CUR_DIR, "0.png"), image)
+        reverse = cv.bitwise_not(image)
+        _, user_mask = cv.threshold(reverse, 1, 255, cv.THRESH_BINARY)
+        cv.imwrite(os.path.join(CUR_DIR, "0.png"), user_mask)
 
     mask = np.zeros(shape=shape, dtype=np.uint8)
     for i in maskNum:
@@ -32,4 +34,4 @@ def MaskDownload(name, maskCnt):
     return 0
 
 if __name__ == '__main__':
-    MaskDownload('416CA790', 6)
+    MaskDownload('2FAF1069', 6)

@@ -104,11 +104,12 @@ def detectP(name):
 
     filename = os.listdir(CUR_DIR)
     image = cv.imread(os.path.join(CUR_DIR, filename[0]))
-
+    '''
     if image.shape[0] >= image.shape[1]:
         image = imutils.resize(image, height=720)
     else:
         image = imutils.resize(image, width=720)
+    '''
     cv.imwrite(os.path.join(CUR_DIR, name + ".png"), image)
 
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -123,7 +124,7 @@ def detectP(name):
     f.write(str(maskCnt))
     f.close()
 
-    os.remove(os.path.join(CUR_DIR, filename[0]))
+    #os.remove(os.path.join(CUR_DIR, filename[0]))
     return maskCnt
 
 def process(name):
@@ -148,8 +149,7 @@ imgd.start()
 while True:
     waiting = os.listdir(WAIT_DIR)
     if waiting == []:
-        time.sleep(5)
-        print("waiting is empty")
+        time.sleep(2)
         continue
     time.sleep(1)
     print(f"waiting is {waiting}")
