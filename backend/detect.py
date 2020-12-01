@@ -95,11 +95,12 @@ def detectP(name):
     CUR_DIR = os.path.join(ROOT_DIR, name)
     filename = os.listdir(CUR_DIR)
     image = cv.imread(os.path.join(CUR_DIR, filename[0]))
-
+    '''
     if image.shape[0] >= image.shape[1]:
         image = imutils.resize(image, height=720)
     else :
         image = imutils.resize(image, width=720)
+    '''
     cv.imwrite(os.path.join(CUR_DIR, name + ".png"), image)
 
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -116,3 +117,5 @@ def detectP(name):
 
     os.remove(os.path.join(CUR_DIR, filename[0]))
     return 0
+
+detectP("1024_512")
