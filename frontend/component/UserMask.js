@@ -11,6 +11,8 @@ import Constants from "expo-constants";
 import ExpoPixi from "expo-pixi";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Select from "./Select";
+import Loading from "./Loading";
+import Result from "./Result";
 
 import * as ImagePicker from "expo-image-picker";
 
@@ -55,6 +57,9 @@ export default class UserMode extends Component {
       description: "",
       image: null,
     },
+
+    uploading: false,
+    inpaintDone: false,
   };
 
   componentDidMount() {
@@ -126,7 +131,13 @@ export default class UserMode extends Component {
       }
     )
       .then((response) => response.text())
-      .then((res) => console.log(res))
+      .then((res) => {
+        console.log(res);
+        this.setState({
+          uploading: false,
+          inpaintDone: true,
+        });
+      })
       .catch((error) => console.error("Error:", error));
   };
 
@@ -355,6 +366,15 @@ export default class UserMode extends Component {
   };
 
   render() {
+    if (this.state.uploading) {
+      return (
+        <View style={{ flex: 1 }}>
+          <Loading />
+        </View>
+      );
+    } else if (this.state.inpaintDone) {
+      return <Result sessionid={this.props.sessionid} />;
+    }
     if (this.state.goBack) {
       return this.renderSelect();
     } else {
