@@ -56,6 +56,16 @@ export default class Result extends React.Component {
   };
 
   pressedBack = () => {
+    fetch(
+      `http://winners.dothome.co.kr/thanks.php?session=${this.state.sessionid}`
+    )
+      .then((response) => response.text())
+      .then((responseText) => {
+        if (responseText) {
+          console.log(responseText);
+        }
+      })
+      .catch((error) => alert(error));
     this.setState({ goBack: !this.state.goBack });
   };
 
