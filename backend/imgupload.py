@@ -6,7 +6,7 @@ def ImgUpload(name, maskCnt):
     ses = ftplib.FTP("winners.dothome.co.kr", "winners", "tkdals96!")
     ses.cwd("./html/"+name)
 
-    for i in range(maskCnt+1):
+    for i in range(maskCnt):
         ses.delete(str(i)+'.png')
 
     filename = '4#_'+name+'.png'
@@ -15,7 +15,7 @@ def ImgUpload(name, maskCnt):
     localfile.close()
 
     f = open(os.path.join(CUR_DIR, name+'.txt') , 'w', encoding='ANSI')
-    f.write("Done")
+    f.write("done")
     f.close()
 
     with open(os.path.join(CUR_DIR, name+".txt"), 'rb') as localfile:
@@ -25,7 +25,7 @@ def ImgUpload(name, maskCnt):
     while True:
         lines = []
         ses.retrlines("RETR " + name + '.txt', lines.append)
-        if lines[0] == "Thanks": break
+        if lines[0] == "thanks": break
         time.sleep(2)
 
     ses.delete(filename)
