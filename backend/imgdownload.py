@@ -14,7 +14,6 @@ def ImgDownload():
             continue
 
         for file in data:
-            print(file)
             idx = file[::-1].find(".") + 1
             ses.mkd("./../" + file[55:-idx])
             ses.rename(file[55:], "./../" + file[55:-idx] + "/" + file[55:])
@@ -29,5 +28,4 @@ def ImgDownload():
             ses.delete(file[55:])
             ses.cwd("./../waiting")
 
-if __name__ == '__main__':
-    ImgDownload()
+#ImgDownload()
