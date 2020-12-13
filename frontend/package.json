@@ -9,14 +9,19 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/slider": "3.0.0",
     "@react-navigation/native": "^5.7.3",
     "@react-navigation/stack": "^5.9.0",
     "expo": "^38.0.0",
     "expo-camera": "~8.3.1",
     "expo-constants": "~9.1.1",
+    "expo-file-system": "~9.0.1",
+    "expo-gl": "~8.3.1",
+    "expo-image-manipulator": "~8.2.1",
     "expo-image-picker": "~8.3.0",
     "expo-media-library": "~8.2.1",
     "expo-permissions": "~9.0.1",
+    "expo-pixi": "^1.2.0",
     "react": "16.11.0",
     "react-dom": "16.11.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-38.0.2.tar.gz",
@@ -32,7 +37,8 @@
     "react-native-screens": "~2.9.0",
     "react-native-web": "~0.11.7",
     "react-navigation-animated-switch": "^0.6.0",
-    "react-navigation-hooks": "^1.1.0"
+    "react-navigation-hooks": "^1.1.0",
+    "react-redux": "^7.2.2"
   },
   "devDependencies": {
     "babel-preset-expo": "^8.2.3"
